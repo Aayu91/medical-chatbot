@@ -1,81 +1,943 @@
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Chatbot</title>
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
-	</head>
-	
-	
-	<body>
-		<div class="container-fluid h-100">
-			<div class="row justify-content-center h-100">		
-				<div class="col-md-8 col-xl-6 chat">
-					<div class="card">
-						<div class="card-header msg_head">
-							<div class="d-flex bd-highlight">
-								<div class="img_cont">
-									<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img">
-									<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-									<span class="online_icon"></span>
-								</div>
-								<div class="user_info">
-									<span>🩺 AetherCura</span>
-									<p>Ask me anything!</p>
-								</div>
-							</div>
-						</div>
-						<div id="messageFormeight" class="card-body msg_card_body">
-							
-							
-						</div>
-						<div class="card-footer">
-							<form id="messageArea" class="input-group">
-                                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
-								<div class="input-group-append">
-									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<script>
-			$(document).ready(function() {
-				$("#messageArea").on("submit", function(event) {
-					const date = new Date();
-					const hour = date.getHours();
-					const minute = date.getMinutes();
-					const str_time = hour+":"+minute;
-					var rawText = $("#text").val();
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherCura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg-1:#040b16;
+            --bg-2:#071525;
+            --bg-3:#0b1f34;
+            --panel:rgba(255,255,255,0.07);
+            --border:rgba(255,255,255,0.14);
+            --text:#eaf4ff;
+            --muted:#9bb0c7;
+            --primary:#00d4ff;
+            --secondary:#14f1c7;
+            --danger:#ff5b6e;
+            --user-grad:linear-gradient(135deg,#00b8ff,#0078ff);
+            --bot-grad:linear-gradient(135deg,rgba(20,241,199,0.16),rgba(0,212,255,0.08));
+            --shadow:0 20px 60px rgba(0,0,0,0.35);
+        }
 
-					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-					
-					$("#text").val("");
-					$("#messageFormeight").append(userHtml);
+        *{margin:0;padding:0;box-sizing:border-box}
 
-					$.ajax({
-						data: {
-							msg: rawText,	
-						},
-						type: "POST",
-						url: "/get",
-					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
-						$("#messageFormeight").append($.parseHTML(botHtml));
-					});
-					event.preventDefault();
-				});
-			});
-		</script>
-        
-    </body>
+        body{
+            font-family:'Inter',sans-serif;
+            min-height:100vh;
+            color:var(--text);
+            background:
+                radial-gradient(circle at 12% 18%, rgba(0,212,255,0.18), transparent 28%),
+                radial-gradient(circle at 82% 12%, rgba(20,241,199,0.16), transparent 24%),
+                radial-gradient(circle at 70% 80%, rgba(0,136,255,0.14), transparent 28%),
+                linear-gradient(145deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
+            overflow:hidden;
+        }
+
+        body::before,
+        body::after{
+            content:"";
+            position:fixed;
+            width:320px;
+            height:320px;
+            border-radius:50%;
+            filter:blur(70px);
+            opacity:.35;
+            pointer-events:none;
+            z-index:0;
+            animation:floatGlow 10s ease-in-out infinite;
+        }
+
+        body::before{top:8%;left:-60px;background:rgba(0,212,255,.22)}
+        body::after{bottom:-40px;right:-40px;background:rgba(20,241,199,.18);animation-delay:2s}
+
+        @keyframes floatGlow{
+            0%,100%{transform:translateY(0) scale(1)}
+            50%{transform:translateY(-18px) scale(1.05)}
+        }
+
+        .grid-overlay{
+            position:fixed;
+            inset:0;
+            background-image:
+                linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+            background-size:40px 40px;
+            pointer-events:none;
+            z-index:0;
+        }
+
+        .app-shell{
+            position:relative;
+            z-index:1;
+            display:flex;
+            height:100vh;
+            padding:18px;
+            gap:18px;
+        }
+
+        .sidebar{
+            width:320px;
+            background:var(--panel);
+            border:1px solid var(--border);
+            backdrop-filter:blur(18px);
+            border-radius:28px;
+            box-shadow:var(--shadow);
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+        }
+
+        .sidebar-top{
+            padding:24px 22px 18px;
+            border-bottom:1px solid rgba(255,255,255,.08);
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:14px;
+            margin-bottom:16px;
+        }
+
+        .brand-icon{
+            width:58px;
+            height:58px;
+            border-radius:18px;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 38%),
+                linear-gradient(145deg, rgba(0,212,255,.22), rgba(20,241,199,.12));
+            border:1px solid rgba(255,255,255,.14);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow:0 0 24px rgba(0,212,255,.18);
+        }
+
+        .brand-icon::before{
+            content:"+";
+            font-size:28px;
+            font-weight:800;
+            color:#dffcff;
+            text-shadow:0 0 12px rgba(20,241,199,.8);
+        }
+
+        .brand-text h1{
+            font-family:'Orbitron',sans-serif;
+            font-size:24px;
+            letter-spacing:1px;
+            margin-bottom:4px;
+        }
+
+        .brand-text p{
+            font-size:12px;
+            color:var(--muted);
+            line-height:1.5;
+        }
+
+        .mission{
+            padding:14px 16px;
+            border-radius:18px;
+            background:linear-gradient(135deg, rgba(0,212,255,.10), rgba(20,241,199,.07));
+            border:1px solid rgba(255,255,255,.08);
+        }
+
+        .mission-title{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-size:12px;
+            font-weight:700;
+            color:#dffcff;
+            text-transform:uppercase;
+            letter-spacing:1px;
+            margin-bottom:6px;
+        }
+
+        .pulse-dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:var(--secondary);
+            box-shadow:0 0 14px var(--secondary);
+            animation:pulse 1.6s infinite;
+        }
+
+        @keyframes pulse{
+            0%{transform:scale(1);opacity:1}
+            70%{transform:scale(1.8);opacity:.15}
+            100%{transform:scale(1);opacity:1}
+        }
+
+        .mission p{
+            color:var(--muted);
+            font-size:12.5px;
+            line-height:1.6;
+        }
+
+        .sidebar-actions{
+            padding:18px 22px 14px;
+            display:grid;
+            gap:10px;
+        }
+
+        .action-btn{
+            text-decoration:none;
+            color:var(--text);
+            padding:14px 16px;
+            border-radius:16px;
+            background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+            border:1px solid rgba(255,255,255,.08);
+            transition:.25s ease;
+            font-weight:600;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .action-btn:hover{
+            transform:translateY(-2px);
+            background:linear-gradient(135deg, rgba(0,212,255,.15), rgba(20,241,199,.10));
+        }
+
+        .sidebar-section{
+            padding:4px 22px 10px;
+            color:var(--muted);
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:1.5px;
+            font-weight:700;
+        }
+
+        .chat-list{
+            flex:1;
+            overflow-y:auto;
+            padding:0 16px 18px;
+        }
+
+        .chat-list::-webkit-scrollbar,
+        .messages::-webkit-scrollbar{width:8px}
+
+        .chat-list::-webkit-scrollbar-thumb,
+        .messages::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,.12);
+            border-radius:10px;
+        }
+
+        .chat-link{
+            display:block;
+            text-decoration:none;
+            color:var(--text);
+            padding:14px;
+            margin-bottom:10px;
+            border-radius:16px;
+            background:rgba(255,255,255,.04);
+            border:1px solid rgba(255,255,255,.05);
+            transition:.22s ease;
+        }
+
+        .chat-link:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
+
+        .chat-link.active{
+            background:linear-gradient(135deg, rgba(0,212,255,.16), rgba(20,241,199,.10));
+            border-color:rgba(0,212,255,.28);
+        }
+
+        .chat-link-title{
+            font-size:14px;
+            font-weight:600;
+            line-height:1.45;
+            margin-bottom:6px;
+            display:-webkit-box;
+            -webkit-line-clamp:2;
+            -webkit-box-orient:vertical;
+            overflow:hidden;
+        }
+
+        .chat-link-meta{font-size:11px;color:var(--muted)}
+
+        .main-panel{
+            flex:1;
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            background:var(--panel);
+            border:1px solid var(--border);
+            backdrop-filter:blur(18px);
+            border-radius:28px;
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .main-header{
+            padding:22px 26px;
+            border-bottom:1px solid rgba(255,255,255,.08);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+        }
+
+        .header-left h2{
+            font-size:22px;
+            margin-bottom:6px;
+            font-weight:800;
+        }
+
+        .header-left p{
+            color:var(--muted);
+            font-size:13px;
+            line-height:1.6;
+        }
+
+        .header-right{
+            display:flex;
+            gap:12px;
+            align-items:center;
+        }
+
+        .user-pill{
+            padding:10px 14px;
+            border-radius:999px;
+            background:rgba(255,255,255,.06);
+            border:1px solid rgba(255,255,255,.08);
+            font-size:13px;
+        }
+
+        .logout-btn{
+            text-decoration:none;
+            color:white;
+            padding:11px 16px;
+            border-radius:14px;
+            font-size:13px;
+            font-weight:700;
+            background:linear-gradient(135deg, #ff5f7a, #ff2d55);
+        }
+
+        .mode-pills{
+            padding:16px 22px 0;
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+        }
+
+        .mode-pill{
+            border:1px solid rgba(255,255,255,.08);
+            background:rgba(255,255,255,.05);
+            color:var(--text);
+            padding:10px 14px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            cursor:pointer;
+            transition:.22s ease;
+        }
+
+        .mode-pill.active,
+        .mode-pill:hover{
+            background:linear-gradient(135deg, rgba(0,212,255,.16), rgba(20,241,199,.10));
+            border-color:rgba(0,212,255,.25);
+        }
+
+        .chip-bar{
+            padding:10px 22px 0;
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+        }
+
+        .quick-chip{
+            padding:10px 14px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.08);
+            background:rgba(255,255,255,.05);
+            color:var(--text);
+            font-size:12px;
+            font-weight:700;
+            cursor:pointer;
+            transition:.22s ease;
+        }
+
+        .quick-chip:hover{
+            transform:translateY(-1px);
+            background:rgba(255,255,255,.08);
+        }
+
+        .messages{
+            flex:1;
+            overflow-y:auto;
+            padding:12px 24px 18px;
+            display:flex;
+            flex-direction:column;
+            gap:16px;
+        }
+
+        .welcome-card,
+        .insight-card,
+        .emergency-box{
+            max-width:760px;
+            padding:20px;
+            border-radius:22px;
+            border:1px solid rgba(255,255,255,.08);
+        }
+
+        .welcome-card{
+            background:linear-gradient(135deg, rgba(0,212,255,.12), rgba(20,241,199,.08));
+        }
+
+        .welcome-card h3{font-size:22px;margin-bottom:10px}
+        .welcome-card p{color:var(--muted);line-height:1.7;font-size:14px}
+
+        .message-row{display:flex;width:100%}
+        .user-row{justify-content:flex-end}
+        .bot-row{justify-content:flex-start}
+
+        .message{
+            max-width:min(75%, 760px);
+            padding:16px 18px;
+            border-radius:20px;
+            line-height:1.7;
+            font-size:14.5px;
+            white-space:pre-wrap;
+            word-break:break-word;
+            box-shadow:0 16px 30px rgba(0,0,0,.12);
+        }
+
+        .message.user{
+            background:var(--user-grad);
+            color:white;
+            border-bottom-right-radius:8px;
+        }
+
+        .message.bot{
+            background:var(--bot-grad);
+            border:1px solid rgba(255,255,255,.08);
+            color:var(--text);
+            border-bottom-left-radius:8px;
+        }
+
+        .message-label{
+            display:block;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:1.3px;
+            font-weight:700;
+            margin-bottom:8px;
+            opacity:.9;
+        }
+
+        .message.bot .message-label{color:#8eefff}
+        .message.user .message-label{color:rgba(255,255,255,.82)}
+
+        .insight-card{
+            background:rgba(255,255,255,.05);
+            display:grid;
+            gap:12px;
+        }
+
+        .insight-title{
+            font-size:15px;
+            font-weight:800;
+            color:#aef6ff;
+        }
+
+        .insight-grid{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0,1fr));
+            gap:12px;
+        }
+
+        .insight-item{
+            padding:14px;
+            border-radius:16px;
+            background:rgba(255,255,255,.04);
+            border:1px solid rgba(255,255,255,.06);
+        }
+
+        .insight-item .k{
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:1.2px;
+            color:var(--muted);
+            margin-bottom:6px;
+            font-weight:700;
+        }
+
+        .insight-item .v{
+            font-size:13px;
+            line-height:1.7;
+        }
+
+        .emergency-box{
+            background:linear-gradient(135deg, rgba(255,91,110,.18), rgba(255,179,71,.10));
+            border-color:rgba(255,91,110,.35);
+        }
+
+        .emergency-box h4{
+            font-size:16px;
+            margin-bottom:8px;
+            color:#ffe3e7;
+        }
+
+        .emergency-box p{
+            font-size:13.5px;
+            line-height:1.7;
+            color:#ffdfe6;
+        }
+
+        .composer-wrap{
+            padding:16px 22px 22px;
+            border-top:1px solid rgba(255,255,255,.08);
+        }
+
+        .typing-box{
+            display:none;
+            align-items:center;
+            gap:12px;
+            margin-bottom:12px;
+            padding:14px 16px;
+            border-radius:18px;
+            background:rgba(255,255,255,.05);
+            border:1px solid rgba(255,255,255,.08);
+            width:fit-content;
+        }
+
+        .heartbeat{
+            width:54px;
+            height:18px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .heartbeat svg{
+            width:100%;
+            height:100%;
+        }
+
+        .heartbeat path{
+            fill:none;
+            stroke:#74efff;
+            stroke-width:2.5;
+            stroke-linecap:round;
+            stroke-linejoin:round;
+            stroke-dasharray:140;
+            stroke-dashoffset:140;
+            animation:heartbeatLine 1.6s linear infinite;
+        }
+
+        @keyframes heartbeatLine{
+            to{stroke-dashoffset:0}
+        }
+
+        .typing-text{
+            display:grid;
+            gap:4px;
+            font-size:12px;
+            color:#b7f8ff;
+        }
+
+        .typing-text span:last-child{
+            color:var(--muted);
+        }
+
+        .composer{
+            display:flex;
+            align-items:flex-end;
+            gap:12px;
+            background:rgba(255,255,255,.06);
+            border:1px solid rgba(255,255,255,.10);
+            border-radius:22px;
+            padding:12px;
+        }
+
+        .composer textarea{
+            flex:1;
+            min-height:58px;
+            max-height:160px;
+            resize:none;
+            border:none;
+            outline:none;
+            background:transparent;
+            color:var(--text);
+            font-family:'Inter',sans-serif;
+            font-size:14.5px;
+            line-height:1.6;
+            padding:10px 10px 8px;
+        }
+
+        .composer textarea::placeholder{color:#8da4bc}
+
+        .action-stack{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .download-btn,
+        .send-btn{
+            border:none;
+            border-radius:18px;
+            cursor:pointer;
+            color:white;
+            font-weight:700;
+            transition:.25s ease;
+        }
+
+        .download-btn{
+            min-width:58px;
+            height:58px;
+            background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+            border:1px solid rgba(255,255,255,.1);
+            color:#c9f9ff;
+            text-decoration:none;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:20px;
+        }
+
+        .send-btn{
+            min-width:58px;
+            height:58px;
+            font-size:20px;
+            background:linear-gradient(135deg, #00d4ff, #0b7cff, #14f1c7);
+        }
+
+        .composer-footer{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:10px;
+            padding:0 6px;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+
+        .composer-note{
+            color:var(--muted);
+            font-size:12px;
+        }
+
+        .timeline-link{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            color:#9fefff;
+            text-decoration:none;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        @media (max-width:1100px){
+            .message{max-width:86%}
+            .insight-grid{grid-template-columns:1fr}
+        }
+
+        @media (max-width:860px){
+            .app-shell{padding:10px;gap:10px}
+            .sidebar{display:none}
+            .main-header{padding:18px;flex-direction:column;align-items:flex-start}
+            .header-right{width:100%;justify-content:space-between}
+            .mode-pills,.chip-bar{padding-left:14px;padding-right:14px}
+            .messages{padding:14px}
+            .composer-wrap{padding:14px}
+            .message{max-width:94%}
+        }
+    </style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <div class="brand">
+                <div class="brand-icon"></div>
+                <div class="brand-text">
+                    <h1>AetherCura</h1>
+                    <p>AI-powered medical guidance with care, clarity, and trust.</p>
+                </div>
+            </div>
+
+            <div class="mission">
+                <div class="mission-title">
+                    <span class="pulse-dot"></span>
+                    Mission
+                </div>
+                <p>Empower every conversation with intelligent, compassionate, and accessible healthcare support through a futuristic AI assistant experience.</p>
+            </div>
+        </div>
+
+        <div class="sidebar-actions">
+            <a href="{{ url_for('new_chat') }}" class="action-btn">✦ Start New Consultation</a>
+            <a href="{{ url_for('history') }}" class="action-btn">🕘 Open Timeline History</a>
+        </div>
+
+        <div class="sidebar-section">Recent Consultations</div>
+
+        <div class="chat-list">
+            {% for chat in chat_sessions %}
+                <a href="{{ url_for('load_chat', session_id=chat['_id']) }}"
+                   class="chat-link {% if current_session_id == chat['_id']|string %}active{% endif %}">
+                    <div class="chat-link-title">{{ chat['title'] }}</div>
+                    <div class="chat-link-meta">Consultation timeline node</div>
+                </a>
+            {% else %}
+                <a href="{{ url_for('new_chat') }}" class="chat-link">
+                    <div class="chat-link-title">No consultations yet</div>
+                    <div class="chat-link-meta">Start your first intelligent health chat</div>
+                </a>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <main class="main-panel">
+        <header class="main-header">
+            <div class="header-left">
+                <h2>Welcome, {{ username }}</h2>
+                <p>Your intelligent healthcare companion for safe and meaningful conversations.</p>
+            </div>
+            <div class="header-right">
+                <div class="user-pill">Connected to AetherCura Core</div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <div class="mode-pills" id="mode-pills">
+            <button class="mode-pill active" data-mode="General Health">General Health</button>
+            <button class="mode-pill" data-mode="Symptoms Check">Symptoms Check</button>
+            <button class="mode-pill" data-mode="Medicine Info">Medicine Info</button>
+            <button class="mode-pill" data-mode="Lifestyle Advice">Lifestyle Advice</button>
+            <button class="mode-pill" data-mode="Emergency Precautions">Emergency Precautions</button>
+        </div>
+
+        <div class="chip-bar">
+            <button class="quick-chip">Fever guidance</button>
+            <button class="quick-chip">Headache causes</button>
+            <button class="quick-chip">Diet advice</button>
+            <button class="quick-chip">Skin allergy</button>
+            <button class="quick-chip">Diabetes basics</button>
+            <button class="quick-chip">BP precautions</button>
+        </div>
+
+        <section class="messages" id="chat-box">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message-row {% if message['sender'] == 'user' %}user-row{% else %}bot-row{% endif %}">
+                        <div class="message {{ message['sender'] }}">
+                            <span class="message-label">
+                                {% if message['sender'] == 'user' %}You{% else %}AetherCura AI{% endif %}
+                            </span>
+                            {{ message['message'] }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="welcome-card" id="welcome-card">
+                    <h3>Begin a smarter healthcare conversation</h3>
+                    <p>Ask about symptoms, precautions, wellness guidance, or general health information. AetherCura is designed to make every interaction feel calm, modern, and mission-driven.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <div class="composer-wrap">
+            <div class="typing-box" id="typing-indicator">
+                <div class="heartbeat">
+                    <svg viewBox="0 0 60 20" preserveAspectRatio="none">
+                        <path d="M0 10 L10 10 L16 10 L21 3 L27 17 L33 6 L38 10 L60 10"></path>
+                    </svg>
+                </div>
+                <div class="typing-text">
+                    <span>Analyzing symptoms and context...</span>
+                    <span>Cross-checking knowledge base and generating safe response</span>
+                </div>
+            </div>
+
+            <form id="chat-form">
+                <div class="composer">
+                    <textarea id="msg" name="msg" placeholder="Describe your health query, symptom, or concern..." required></textarea>
+                    <div class="action-stack">
+                        {% if current_session_id %}
+                            <a class="download-btn" href="{{ url_for('download_report', session_id=current_session_id) }}" title="Download AI consultation report">⤓</a>
+                        {% else %}
+                            <a class="download-btn" href="{{ url_for('new_chat') }}" title="Create a consultation first">⤓</a>
+                        {% endif %}
+                        <button type="submit" class="send-btn" id="send-btn">➜</button>
+                    </div>
+                </div>
+
+                <div class="composer-footer">
+                    <div class="composer-note">AetherCura provides AI-assisted health support. For diagnosis, emergencies, or prescriptions, consult a licensed professional.</div>
+                    <a href="{{ url_for('history') }}" class="timeline-link">⎯ View consultation timeline</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("msg");
+    const chatBox = document.getElementById("chat-box");
+    const sendBtn = document.getElementById("send-btn");
+    const typingIndicator = document.getElementById("typing-indicator");
+    const modePills = document.querySelectorAll(".mode-pill");
+    const quickChips = document.querySelectorAll(".quick-chip");
+
+    function autoResize() {
+        input.style.height = "auto";
+        input.style.height = Math.min(input.scrollHeight, 160) + "px";
+    }
+
+    function removeWelcomeCard() {
+        const welcomeCard = document.getElementById("welcome-card");
+        if (welcomeCard) welcomeCard.remove();
+    }
+
+    function setActiveMode(mode) {
+        modePills.forEach(pill => {
+            pill.classList.toggle("active", pill.dataset.mode === mode);
+        });
+    }
+
+    modePills.forEach(pill => {
+        pill.addEventListener("click", () => {
+            setActiveMode(pill.dataset.mode);
+            input.value = `${pill.dataset.mode}: `;
+            input.focus();
+            autoResize();
+        });
+    });
+
+    quickChips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            input.value = chip.textContent;
+            input.focus();
+            autoResize();
+        });
+    });
+
+    function appendMessage(text, className) {
+        removeWelcomeCard();
+
+        const row = document.createElement("div");
+        row.className = "message-row " + (className === "user" ? "user-row" : "bot-row");
+
+        const message = document.createElement("div");
+        message.className = "message " + className;
+
+        const label = document.createElement("span");
+        label.className = "message-label";
+        label.textContent = className === "user" ? "You" : "AetherCura AI";
+
+        const content = document.createElement("div");
+        content.textContent = text;
+
+        message.appendChild(label);
+        message.appendChild(content);
+        row.appendChild(message);
+        chatBox.appendChild(row);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendEmergencyBox() {
+        const box = document.createElement("div");
+        box.className = "emergency-box";
+        box.innerHTML = `
+            <h4>Emergency Alert</h4>
+            <p>Possible urgent symptoms detected. Please seek immediate medical help or contact local emergency services if the condition is severe, worsening, or involves chest pain, breathing trouble, unconsciousness, seizures, or severe bleeding.</p>
+        `;
+        chatBox.appendChild(box);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendInsightCard(insight) {
+        const card = document.createElement("div");
+        card.className = "insight-card";
+        card.innerHTML = `
+            <div class="insight-title">Response Insight Card</div>
+            <div class="insight-grid">
+                <div class="insight-item">
+                    <div class="k">Focus Area</div>
+                    <div class="v">${insight.focus_area}</div>
+                </div>
+                <div class="insight-item">
+                    <div class="k">Suggested Next Step</div>
+                    <div class="v">${insight.next_step}</div>
+                </div>
+                <div class="insight-item">
+                    <div class="k">Safety Note</div>
+                    <div class="v">${insight.safety_note}</div>
+                </div>
+            </div>
+        `;
+        chatBox.appendChild(card);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        appendMessage(msg, "user");
+        input.value = "";
+        autoResize();
+
+        typingIndicator.style.display = "flex";
+        sendBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("msg", msg);
+
+        try {
+            const res = await fetch("/get", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                appendMessage(data.error, "bot");
+            } else {
+                appendMessage(data.answer, "bot");
+                setActiveMode(data.mode || "General Health");
+
+                if (data.emergency) {
+                    appendEmergencyBox();
+                }
+
+                if (data.insight) {
+                    appendInsightCard(data.insight);
+                }
+            }
+        } catch (error) {
+            appendMessage("Something went wrong while connecting to AetherCura. Please try again.", "bot");
+        } finally {
+            typingIndicator.style.display = "none";
+            sendBtn.disabled = false;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    });
+
+    input.addEventListener("input", autoResize);
+
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            form.requestSubmit();
+        }
+    });
+
+    window.addEventListener("load", function() {
+        autoResize();
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+</script>
+</body>
 </html>
