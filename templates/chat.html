@@ -16,7 +16,6 @@
             --muted:#9bb0c7;
             --primary:#00d4ff;
             --secondary:#14f1c7;
-            --danger:#ff5b6e;
             --user-grad:linear-gradient(135deg,#00b8ff,#0078ff);
             --bot-grad:linear-gradient(135deg,rgba(20,241,199,0.16),rgba(0,212,255,0.08));
             --shadow:0 20px 60px rgba(0,0,0,0.35);
@@ -36,38 +35,146 @@
             overflow:hidden;
         }
 
-        body::before,
-        body::after{
-            content:"";
-            position:fixed;
-            width:320px;
-            height:320px;
-            border-radius:50%;
-            filter:blur(70px);
-            opacity:.35;
-            pointer-events:none;
-            z-index:0;
-            animation:floatGlow 10s ease-in-out infinite;
-        }
-
-        body::before{top:8%;left:-60px;background:rgba(0,212,255,.22)}
-        body::after{bottom:-40px;right:-40px;background:rgba(20,241,199,.18);animation-delay:2s}
-
-        @keyframes floatGlow{
-            0%,100%{transform:translateY(0) scale(1)}
-            50%{transform:translateY(-18px) scale(1.05)}
-        }
-
-        .grid-overlay{
+        .medical-bg{
             position:fixed;
             inset:0;
-            background-image:
-                linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
-            background-size:40px 40px;
+            overflow:hidden;
             pointer-events:none;
             z-index:0;
         }
+
+        .grid-layer{
+            position:absolute;
+            inset:0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+            background-size:46px 46px;
+            opacity:.22;
+            mask-image:radial-gradient(circle at center, black 40%, transparent 95%);
+            -webkit-mask-image:radial-gradient(circle at center, black 40%, transparent 95%);
+            animation:gridFloat 20s linear infinite;
+        }
+
+        .ecg-line{
+            position:absolute;
+            top:16%;
+            left:-8%;
+            width:116%;
+            height:110px;
+            opacity:.15;
+            filter:drop-shadow(0 0 10px rgba(0,212,255,.22));
+            background-repeat:no-repeat;
+            background-size:100% 100%;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200' preserveAspectRatio='none'%3E%3Cpath d='M0 110 L120 110 L170 110 L210 70 L250 150 L300 110 L450 110 L520 110 L560 85 L590 110 L760 110 L820 110 L860 55 L910 165 L970 110 L1110 110 L1180 110 L1230 90 L1270 110 L1600 110' stroke='%2300d4ff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            animation:ecgMove 11s linear infinite;
+        }
+
+        .dna{
+            position:absolute;
+            width:160px;
+            height:420px;
+            opacity:.08;
+            filter:drop-shadow(0 0 12px rgba(20,241,199,.15));
+        }
+
+        .dna::before,
+        .dna::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            background-repeat:repeat-y;
+            background-size:100% 64px;
+        }
+
+        .dna::before{
+            background-image:
+                radial-gradient(circle at 28% 18%, rgba(20,241,199,.85) 0 2px, transparent 3px),
+                radial-gradient(circle at 72% 50%, rgba(0,212,255,.85) 0 2px, transparent 3px),
+                linear-gradient(75deg, transparent 44%, rgba(255,255,255,.14) 48%, rgba(255,255,255,.14) 52%, transparent 56%);
+            animation:dnaTwist 9s ease-in-out infinite;
+        }
+
+        .dna::after{
+            background-image:
+                radial-gradient(circle at 72% 18%, rgba(20,241,199,.75) 0 2px, transparent 3px),
+                radial-gradient(circle at 28% 50%, rgba(0,212,255,.75) 0 2px, transparent 3px),
+                linear-gradient(-75deg, transparent 44%, rgba(255,255,255,.12) 48%, rgba(255,255,255,.12) 52%, transparent 56%);
+            animation:dnaTwistReverse 9s ease-in-out infinite;
+        }
+
+        .dna-1{
+            top:18%;
+            right:6%;
+            transform:rotate(12deg);
+        }
+
+        .dna-2{
+            bottom:10%;
+            left:4%;
+            transform:rotate(-10deg) scale(.9);
+            opacity:.06;
+        }
+
+        .plus{
+            position:absolute;
+            font-family:'Orbitron',sans-serif;
+            color:rgba(170,245,255,.22);
+            text-shadow:0 0 12px rgba(0,212,255,.18);
+            animation:floatPlus 9s ease-in-out infinite;
+            user-select:none;
+        }
+
+        .plus-1{
+            top:24%;
+            left:11%;
+            font-size:28px;
+            animation-delay:0s;
+        }
+
+        .plus-2{
+            top:68%;
+            right:12%;
+            font-size:22px;
+            animation-delay:2s;
+        }
+
+        .plus-3{
+            bottom:20%;
+            left:48%;
+            font-size:18px;
+            animation-delay:4s;
+        }
+
+        .node{
+            position:absolute;
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:rgba(20,241,199,.7);
+            box-shadow:
+                0 0 10px rgba(20,241,199,.45),
+                0 0 20px rgba(0,212,255,.2);
+            opacity:.35;
+            animation:pulseNode 4s ease-in-out infinite;
+        }
+
+        .node::after{
+            content:"";
+            position:absolute;
+            top:50%;
+            left:50%;
+            width:90px;
+            height:1px;
+            background:linear-gradient(90deg, rgba(0,212,255,.18), transparent);
+            transform:translateY(-50%);
+            transform-origin:left center;
+        }
+
+        .node-1{ top:14%; right:20%; animation-delay:0s; }
+        .node-2{ top:58%; left:8%; animation-delay:1s; }
+        .node-3{ bottom:18%; right:28%; animation-delay:2s; }
+        .node-4{ bottom:28%; left:38%; animation-delay:3s; }
 
         .app-shell{
             position:relative;
@@ -106,9 +213,7 @@
             width:58px;
             height:58px;
             border-radius:18px;
-            background:
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 38%),
-                linear-gradient(145deg, rgba(0,212,255,.22), rgba(20,241,199,.12));
+            background:linear-gradient(145deg, rgba(0,212,255,.22), rgba(20,241,199,.12));
             border:1px solid rgba(255,255,255,.14);
             display:flex;
             align-items:center;
@@ -121,7 +226,6 @@
             font-size:28px;
             font-weight:800;
             color:#dffcff;
-            text-shadow:0 0 12px rgba(20,241,199,.8);
         }
 
         .brand-text h1{
@@ -144,33 +248,6 @@
             border:1px solid rgba(255,255,255,.08);
         }
 
-        .mission-title{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            font-size:12px;
-            font-weight:700;
-            color:#dffcff;
-            text-transform:uppercase;
-            letter-spacing:1px;
-            margin-bottom:6px;
-        }
-
-        .pulse-dot{
-            width:8px;
-            height:8px;
-            border-radius:50%;
-            background:var(--secondary);
-            box-shadow:0 0 14px var(--secondary);
-            animation:pulse 1.6s infinite;
-        }
-
-        @keyframes pulse{
-            0%{transform:scale(1);opacity:1}
-            70%{transform:scale(1.8);opacity:.15}
-            100%{transform:scale(1);opacity:1}
-        }
-
         .mission p{
             color:var(--muted);
             font-size:12.5px;
@@ -190,16 +267,10 @@
             border-radius:16px;
             background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
             border:1px solid rgba(255,255,255,.08);
-            transition:.25s ease;
             font-weight:600;
             display:flex;
             align-items:center;
             gap:10px;
-        }
-
-        .action-btn:hover{
-            transform:translateY(-2px);
-            background:linear-gradient(135deg, rgba(0,212,255,.15), rgba(20,241,199,.10));
         }
 
         .sidebar-section{
@@ -217,15 +288,6 @@
             padding:0 16px 18px;
         }
 
-        .chat-list::-webkit-scrollbar,
-        .messages::-webkit-scrollbar{width:8px}
-
-        .chat-list::-webkit-scrollbar-thumb,
-        .messages::-webkit-scrollbar-thumb{
-            background:rgba(255,255,255,.12);
-            border-radius:10px;
-        }
-
         .chat-link{
             display:block;
             text-decoration:none;
@@ -235,10 +297,7 @@
             border-radius:16px;
             background:rgba(255,255,255,.04);
             border:1px solid rgba(255,255,255,.05);
-            transition:.22s ease;
         }
-
-        .chat-link:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
 
         .chat-link.active{
             background:linear-gradient(135deg, rgba(0,212,255,.16), rgba(20,241,199,.10));
@@ -250,10 +309,6 @@
             font-weight:600;
             line-height:1.45;
             margin-bottom:6px;
-            display:-webkit-box;
-            -webkit-line-clamp:2;
-            -webkit-box-orient:vertical;
-            overflow:hidden;
         }
 
         .chat-link-meta{font-size:11px;color:var(--muted)}
@@ -278,7 +333,6 @@
             justify-content:space-between;
             align-items:center;
             gap:16px;
-            background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
         }
 
         .header-left h2{
@@ -317,68 +371,22 @@
             background:linear-gradient(135deg, #ff5f7a, #ff2d55);
         }
 
-        .mode-pills{
-            padding:16px 22px 0;
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-        }
-
-        .mode-pill{
-            border:1px solid rgba(255,255,255,.08);
-            background:rgba(255,255,255,.05);
-            color:var(--text);
-            padding:10px 14px;
-            border-radius:999px;
-            font-size:12px;
-            font-weight:700;
-            cursor:pointer;
-            transition:.22s ease;
-        }
-
-        .mode-pill.active,
-        .mode-pill:hover{
-            background:linear-gradient(135deg, rgba(0,212,255,.16), rgba(20,241,199,.10));
-            border-color:rgba(0,212,255,.25);
-        }
-
-        .chip-bar{
-            padding:10px 22px 0;
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-        }
-
-        .quick-chip{
-            padding:10px 14px;
-            border-radius:999px;
-            border:1px solid rgba(255,255,255,.08);
-            background:rgba(255,255,255,.05);
-            color:var(--text);
-            font-size:12px;
-            font-weight:700;
-            cursor:pointer;
-            transition:.22s ease;
-        }
-
-        .quick-chip:hover{
-            transform:translateY(-1px);
-            background:rgba(255,255,255,.08);
-        }
-
         .messages{
             flex:1;
+            min-height:0;
             overflow-y:auto;
-            padding:12px 24px 18px;
+            padding:20px 24px 12px;
             display:flex;
             flex-direction:column;
             gap:16px;
         }
 
         .welcome-card,
-        .insight-card,
+        .summary-card,
+        .severity-card,
+        .care-card,
         .emergency-box{
-            max-width:760px;
+            max-width:860px;
             padding:20px;
             border-radius:22px;
             border:1px solid rgba(255,255,255,.08);
@@ -387,9 +395,6 @@
         .welcome-card{
             background:linear-gradient(135deg, rgba(0,212,255,.12), rgba(20,241,199,.08));
         }
-
-        .welcome-card h3{font-size:22px;margin-bottom:10px}
-        .welcome-card p{color:var(--muted);line-height:1.7;font-size:14px}
 
         .message-row{display:flex;width:100%}
         .user-row{justify-content:flex-end}
@@ -429,35 +434,31 @@
             opacity:.9;
         }
 
-        .message.bot .message-label{color:#8eefff}
-        .message.user .message-label{color:rgba(255,255,255,.82)}
-
-        .insight-card{
+        .summary-card{
             background:rgba(255,255,255,.05);
-            display:grid;
-            gap:12px;
         }
 
-        .insight-title{
-            font-size:15px;
+        .summary-title{
+            font-size:16px;
             font-weight:800;
             color:#aef6ff;
+            margin-bottom:12px;
         }
 
-        .insight-grid{
+        .summary-grid{
             display:grid;
             grid-template-columns:repeat(3, minmax(0,1fr));
             gap:12px;
         }
 
-        .insight-item{
+        .summary-item{
             padding:14px;
             border-radius:16px;
             background:rgba(255,255,255,.04);
             border:1px solid rgba(255,255,255,.06);
         }
 
-        .insight-item .k{
+        .summary-item .k{
             font-size:11px;
             text-transform:uppercase;
             letter-spacing:1.2px;
@@ -466,26 +467,43 @@
             font-weight:700;
         }
 
-        .insight-item .v{
+        .summary-item .v{
             font-size:13px;
             line-height:1.7;
+        }
+
+        .severity-card{
+            background:rgba(255,255,255,.05);
+        }
+
+        .severity-title{
+            font-size:15px;
+            font-weight:800;
+            margin-bottom:10px;
+        }
+
+        .severity-bar{
+            width:100%;
+            height:14px;
+            border-radius:999px;
+            background:rgba(255,255,255,.08);
+            overflow:hidden;
+            margin-bottom:10px;
+        }
+
+        .severity-fill{
+            height:100%;
+            width:25%;
+            border-radius:999px;
+        }
+
+        .care-card{
+            background:linear-gradient(135deg, rgba(0,212,255,.10), rgba(20,241,199,.07));
         }
 
         .emergency-box{
             background:linear-gradient(135deg, rgba(255,91,110,.18), rgba(255,179,71,.10));
             border-color:rgba(255,91,110,.35);
-        }
-
-        .emergency-box h4{
-            font-size:16px;
-            margin-bottom:8px;
-            color:#ffe3e7;
-        }
-
-        .emergency-box p{
-            font-size:13.5px;
-            line-height:1.7;
-            color:#ffdfe6;
         }
 
         .composer-wrap{
@@ -503,44 +521,6 @@
             background:rgba(255,255,255,.05);
             border:1px solid rgba(255,255,255,.08);
             width:fit-content;
-        }
-
-        .heartbeat{
-            width:54px;
-            height:18px;
-            position:relative;
-            overflow:hidden;
-        }
-
-        .heartbeat svg{
-            width:100%;
-            height:100%;
-        }
-
-        .heartbeat path{
-            fill:none;
-            stroke:#74efff;
-            stroke-width:2.5;
-            stroke-linecap:round;
-            stroke-linejoin:round;
-            stroke-dasharray:140;
-            stroke-dashoffset:140;
-            animation:heartbeatLine 1.6s linear infinite;
-        }
-
-        @keyframes heartbeatLine{
-            to{stroke-dashoffset:0}
-        }
-
-        .typing-text{
-            display:grid;
-            gap:4px;
-            font-size:12px;
-            color:#b7f8ff;
-        }
-
-        .typing-text span:last-child{
-            color:var(--muted);
         }
 
         .composer{
@@ -568,8 +548,6 @@
             padding:10px 10px 8px;
         }
 
-        .composer textarea::placeholder{color:#8da4bc}
-
         .action-stack{
             display:flex;
             align-items:center;
@@ -583,7 +561,6 @@
             cursor:pointer;
             color:white;
             font-weight:700;
-            transition:.25s ease;
         }
 
         .download-btn{
@@ -631,9 +608,40 @@
             font-weight:700;
         }
 
+        @keyframes gridFloat{
+            0%{transform:translateY(0)}
+            50%{transform:translateY(-10px)}
+            100%{transform:translateY(0)}
+        }
+
+        @keyframes ecgMove{
+            0%{transform:translateX(0);opacity:.10}
+            50%{transform:translateX(1.5%);opacity:.18}
+            100%{transform:translateX(0);opacity:.10}
+        }
+
+        @keyframes dnaTwist{
+            0%,100%{transform:translateY(0) scaleX(1)}
+            50%{transform:translateY(-8px) scaleX(.82)}
+        }
+
+        @keyframes dnaTwistReverse{
+            0%,100%{transform:translateY(0) scaleX(1)}
+            50%{transform:translateY(8px) scaleX(1.12)}
+        }
+
+        @keyframes floatPlus{
+            0%,100%{transform:translateY(0) rotate(0deg);opacity:.18}
+            50%{transform:translateY(-12px) rotate(4deg);opacity:.32}
+        }
+
+        @keyframes pulseNode{
+            0%,100%{transform:scale(1);opacity:.25}
+            50%{transform:scale(1.45);opacity:.5}
+        }
+
         @media (max-width:1100px){
-            .message{max-width:86%}
-            .insight-grid{grid-template-columns:1fr}
+            .summary-grid{grid-template-columns:1fr 1fr}
         }
 
         @media (max-width:860px){
@@ -641,15 +649,32 @@
             .sidebar{display:none}
             .main-header{padding:18px;flex-direction:column;align-items:flex-start}
             .header-right{width:100%;justify-content:space-between}
-            .mode-pills,.chip-bar{padding-left:14px;padding-right:14px}
             .messages{padding:14px}
             .composer-wrap{padding:14px}
             .message{max-width:94%}
+            .summary-grid{grid-template-columns:1fr}
+            .dna{display:none}
+            .ecg-line{top:12%;height:80px}
         }
     </style>
 </head>
 <body>
-<div class="grid-overlay"></div>
+
+<div class="medical-bg">
+    <div class="grid-layer"></div>
+    <div class="ecg-line"></div>
+    <div class="dna dna-1"></div>
+    <div class="dna dna-2"></div>
+
+    <div class="plus plus-1">+</div>
+    <div class="plus plus-2">+</div>
+    <div class="plus plus-3">+</div>
+
+    <div class="node node-1"></div>
+    <div class="node node-2"></div>
+    <div class="node node-3"></div>
+    <div class="node node-4"></div>
+</div>
 
 <div class="app-shell">
     <aside class="sidebar">
@@ -663,10 +688,6 @@
             </div>
 
             <div class="mission">
-                <div class="mission-title">
-                    <span class="pulse-dot"></span>
-                    Mission
-                </div>
                 <p>Empower every conversation with intelligent, compassionate, and accessible healthcare support through a futuristic AI assistant experience.</p>
             </div>
         </div>
@@ -674,6 +695,9 @@
         <div class="sidebar-actions">
             <a href="{{ url_for('new_chat') }}" class="action-btn">✦ Start New Consultation</a>
             <a href="{{ url_for('history') }}" class="action-btn">🕘 Open Timeline History</a>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_panel') }}" class="action-btn">📊 Admin Dashboard</a>
+            {% endif %}
         </div>
 
         <div class="sidebar-section">Recent Consultations</div>
@@ -706,23 +730,6 @@
             </div>
         </header>
 
-        <div class="mode-pills" id="mode-pills">
-            <button class="mode-pill active" data-mode="General Health">General Health</button>
-            <button class="mode-pill" data-mode="Symptoms Check">Symptoms Check</button>
-            <button class="mode-pill" data-mode="Medicine Info">Medicine Info</button>
-            <button class="mode-pill" data-mode="Lifestyle Advice">Lifestyle Advice</button>
-            <button class="mode-pill" data-mode="Emergency Precautions">Emergency Precautions</button>
-        </div>
-
-        <div class="chip-bar">
-            <button class="quick-chip">Fever guidance</button>
-            <button class="quick-chip">Headache causes</button>
-            <button class="quick-chip">Diet advice</button>
-            <button class="quick-chip">Skin allergy</button>
-            <button class="quick-chip">Diabetes basics</button>
-            <button class="quick-chip">BP precautions</button>
-        </div>
-
         <section class="messages" id="chat-box">
             {% if messages %}
                 {% for message in messages %}
@@ -738,22 +745,14 @@
             {% else %}
                 <div class="welcome-card" id="welcome-card">
                     <h3>Begin a smarter healthcare conversation</h3>
-                    <p>Ask about symptoms, precautions, wellness guidance, or general health information. AetherCura is designed to make every interaction feel calm, modern, and mission-driven.</p>
+                    <p>Describe your symptom or concern, and AetherCura will generate structured AI guidance, severity level, summary, and care advice.</p>
                 </div>
             {% endif %}
         </section>
 
         <div class="composer-wrap">
             <div class="typing-box" id="typing-indicator">
-                <div class="heartbeat">
-                    <svg viewBox="0 0 60 20" preserveAspectRatio="none">
-                        <path d="M0 10 L10 10 L16 10 L21 3 L27 17 L33 6 L38 10 L60 10"></path>
-                    </svg>
-                </div>
-                <div class="typing-text">
-                    <span>Analyzing symptoms and context...</span>
-                    <span>Cross-checking knowledge base and generating safe response</span>
-                </div>
+                <span>AetherCura is analyzing your consultation...</span>
             </div>
 
             <form id="chat-form">
@@ -761,7 +760,7 @@
                     <textarea id="msg" name="msg" placeholder="Describe your health query, symptom, or concern..." required></textarea>
                     <div class="action-stack">
                         {% if current_session_id %}
-                            <a class="download-btn" href="{{ url_for('download_report', session_id=current_session_id) }}" title="Download AI consultation report">⤓</a>
+                            <a class="download-btn" href="{{ url_for('download_report', session_id=current_session_id) }}" title="Download PDF consultation report">⤓</a>
                         {% else %}
                             <a class="download-btn" href="{{ url_for('new_chat') }}" title="Create a consultation first">⤓</a>
                         {% endif %}
@@ -784,41 +783,11 @@
     const chatBox = document.getElementById("chat-box");
     const sendBtn = document.getElementById("send-btn");
     const typingIndicator = document.getElementById("typing-indicator");
-    const modePills = document.querySelectorAll(".mode-pill");
-    const quickChips = document.querySelectorAll(".quick-chip");
-
-    function autoResize() {
-        input.style.height = "auto";
-        input.style.height = Math.min(input.scrollHeight, 160) + "px";
-    }
 
     function removeWelcomeCard() {
         const welcomeCard = document.getElementById("welcome-card");
         if (welcomeCard) welcomeCard.remove();
     }
-
-    function setActiveMode(mode) {
-        modePills.forEach(pill => {
-            pill.classList.toggle("active", pill.dataset.mode === mode);
-        });
-    }
-
-    modePills.forEach(pill => {
-        pill.addEventListener("click", () => {
-            setActiveMode(pill.dataset.mode);
-            input.value = `${pill.dataset.mode}: `;
-            input.focus();
-            autoResize();
-        });
-    });
-
-    quickChips.forEach(chip => {
-        chip.addEventListener("click", () => {
-            input.value = chip.textContent;
-            input.focus();
-            autoResize();
-        });
-    });
 
     function appendMessage(text, className) {
         removeWelcomeCard();
@@ -843,6 +812,71 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    function appendSummaryCard(summary) {
+        const card = document.createElement("div");
+        card.className = "summary-card";
+        card.innerHTML = `
+            <div class="summary-title">AI Consultation Summary</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="k">Primary Concern</div>
+                    <div class="v">${summary.primary_concern}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="k">Duration</div>
+                    <div class="v">${summary.duration}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="k">Severity</div>
+                    <div class="v">${summary.severity}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="k">Age / Gender</div>
+                    <div class="v">${summary.age} / ${summary.gender}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="k">Precautions</div>
+                    <div class="v">${summary.precautions}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="k">When to See Doctor</div>
+                    <div class="v">${summary.doctor_advice}</div>
+                </div>
+            </div>
+        `;
+        chatBox.appendChild(card);
+    }
+
+    function appendSeverityCard(severity, color) {
+        const widths = {
+            "Low": "25%",
+            "Moderate": "55%",
+            "High": "80%",
+            "Emergency": "100%"
+        };
+
+        const card = document.createElement("div");
+        card.className = "severity-card";
+        card.innerHTML = `
+            <div class="severity-title">Severity Meter: ${severity}</div>
+            <div class="severity-bar">
+                <div class="severity-fill" style="width:${widths[severity] || '25%'}; background:${color};"></div>
+            </div>
+            <div style="color:var(--muted); font-size:13px;">This level is estimated from your message and AI health guidance.</div>
+        `;
+        chatBox.appendChild(card);
+    }
+
+    function appendCareCard(message) {
+        const card = document.createElement("div");
+        card.className = "care-card";
+        card.innerHTML = `
+            <div class="summary-title">Nearby Care Suggestion</div>
+            <div style="font-size:14px; line-height:1.7;">${message}</div>
+        `;
+        chatBox.appendChild(card);
+    }
+
     function appendEmergencyBox() {
         const box = document.createElement("div");
         box.className = "emergency-box";
@@ -851,48 +885,35 @@
             <p>Possible urgent symptoms detected. Please seek immediate medical help or contact local emergency services if the condition is severe, worsening, or involves chest pain, breathing trouble, unconsciousness, seizures, or severe bleeding.</p>
         `;
         chatBox.appendChild(box);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function appendInsightCard(insight) {
-        const card = document.createElement("div");
-        card.className = "insight-card";
-        card.innerHTML = `
-            <div class="insight-title">Response Insight Card</div>
-            <div class="insight-grid">
-                <div class="insight-item">
-                    <div class="k">Focus Area</div>
-                    <div class="v">${insight.focus_area}</div>
-                </div>
-                <div class="insight-item">
-                    <div class="k">Suggested Next Step</div>
-                    <div class="v">${insight.next_step}</div>
-                </div>
-                <div class="insight-item">
-                    <div class="k">Safety Note</div>
-                    <div class="v">${insight.safety_note}</div>
-                </div>
-            </div>
-        `;
-        chatBox.appendChild(card);
-        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     form.addEventListener("submit", async function(e) {
         e.preventDefault();
 
         const msg = input.value.trim();
+        const age = "";
+        const gender = "";
+        const symptom = "";
+        const duration = "";
+        const severity = "";
+        const conditions = "";
+
         if (!msg) return;
 
         appendMessage(msg, "user");
         input.value = "";
-        autoResize();
 
         typingIndicator.style.display = "flex";
         sendBtn.disabled = true;
 
         const formData = new FormData();
         formData.append("msg", msg);
+        formData.append("age", age);
+        formData.append("gender", gender);
+        formData.append("symptom", symptom);
+        formData.append("duration", duration);
+        formData.append("severity", severity);
+        formData.append("conditions", conditions);
 
         try {
             const res = await fetch("/get", {
@@ -906,15 +927,10 @@
                 appendMessage(data.error, "bot");
             } else {
                 appendMessage(data.answer, "bot");
-                setActiveMode(data.mode || "General Health");
-
-                if (data.emergency) {
-                    appendEmergencyBox();
-                }
-
-                if (data.insight) {
-                    appendInsightCard(data.insight);
-                }
+                if (data.summary) appendSummaryCard(data.summary);
+                if (data.severity) appendSeverityCard(data.severity, data.severity_color);
+                if (data.care_message) appendCareCard(data.care_message);
+                if (data.emergency) appendEmergencyBox();
             }
         } catch (error) {
             appendMessage("Something went wrong while connecting to AetherCura. Please try again.", "bot");
@@ -923,20 +939,6 @@
             sendBtn.disabled = false;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-    });
-
-    input.addEventListener("input", autoResize);
-
-    input.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            form.requestSubmit();
-        }
-    });
-
-    window.addEventListener("load", function() {
-        autoResize();
-        chatBox.scrollTop = chatBox.scrollHeight;
     });
 </script>
 </body>

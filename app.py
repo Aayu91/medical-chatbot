@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from src.helper import download_hugging_face_embeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import ChatOpenAI
@@ -12,6 +12,7 @@ from functools import wraps
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 from datetime import datetime
+from fpdf import FPDF
 import os
 import re
 
@@ -71,6 +72,20 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
             return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+
+        user = users_collection.find_one({"_id": ObjectId(session["user_id"])})
+        if not user or user.get("role") != "admin":
+            flash("Access denied. Admin only.")
+            return redirect(url_for("chat_page"))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -137,30 +152,95 @@ def detect_emergency(text: str) -> bool:
     return any(term in text for term in emergency_terms)
 
 
-def build_insight(user_message: str, answer: str, mode: str) -> dict:
-    msg = user_message.strip()
-    short_topic = msg[:60] + ("..." if len(msg) > 60 else "")
-    focus_area = mode
-    next_step = "Share duration, severity, age, and any related symptoms for better guidance."
-    safety_note = "This is general AI-assisted guidance, not a replacement for a licensed doctor."
+def detect_severity(user_message: str, severity_input: str = "", answer: str = ""):
+    full_text = f"{user_message} {answer}".lower()
+    s = severity_input.lower().strip()
 
-    if mode == "Medicine Info":
-        next_step = "Ask about usage, precautions, side effects, or interactions."
-    elif mode == "Lifestyle Advice":
-        next_step = "Ask for a daily plan, diet tips, hydration, sleep, or exercise suggestions."
-    elif mode == "Emergency Precautions":
-        next_step = "Seek urgent medical help or contact local emergency services if symptoms are severe."
-        safety_note = "Possible urgent concern detected. Please do not rely only on AI in emergencies."
-    elif mode == "Symptoms Check":
-        next_step = "Ask about causes, warning signs, home care, and when to see a doctor."
+    if detect_emergency(full_text):
+        return "Emergency", "#ff4d6d"
+
+    if s in ["severe", "very severe", "10", "9", "8"]:
+        return "High", "#ff8c42"
+
+    if s in ["moderate", "7", "6", "5"]:
+        return "Moderate", "#ffd166"
+
+    if s in ["mild", "low", "4", "3", "2", "1"]:
+        return "Low", "#42d392"
+
+    high_terms = ["high fever", "severe pain", "vomiting blood", "fainting", "persistent chest pain"]
+    moderate_terms = ["fever", "vomiting", "rash", "headache", "cough", "body pain"]
+
+    if any(term in full_text for term in high_terms):
+        return "High", "#ff8c42"
+    if any(term in full_text for term in moderate_terms):
+        return "Moderate", "#ffd166"
+    return "Low", "#42d392"
+
+
+def build_summary(intake_data, user_message, answer, mode, severity_label):
+    age = intake_data.get("age", "Not provided")
+    gender = intake_data.get("gender", "Not provided")
+    symptom = intake_data.get("symptom", "Not provided")
+    duration = intake_data.get("duration", "Not provided")
+    existing_conditions = intake_data.get("conditions", "Not provided")
+
+    precautions = "Monitor symptoms, stay hydrated, rest well, and consult a doctor if symptoms worsen."
+    doctor_advice = "Consult a doctor if symptoms persist, worsen, or new warning signs appear."
+
+    if severity_label == "Emergency":
+        precautions = "Seek emergency medical help immediately. Do not rely only on AI guidance."
+        doctor_advice = "Contact emergency services or visit the nearest hospital now."
+    elif severity_label == "High":
+        precautions = "Avoid self-medication without guidance. Rest, hydrate, and seek prompt medical evaluation."
+        doctor_advice = "Consult a doctor as soon as possible."
+    elif severity_label == "Moderate":
+        precautions = "Track symptoms carefully, rest, hydrate, and avoid triggers if known."
+        doctor_advice = "Consult a doctor if symptoms continue or become more severe."
 
     return {
-        "topic": short_topic,
-        "focus_area": focus_area,
-        "next_step": next_step,
-        "safety_note": safety_note
+        "age": age,
+        "gender": gender,
+        "primary_concern": symptom if symptom != "Not provided" else user_message[:80],
+        "duration": duration,
+        "existing_conditions": existing_conditions,
+        "mode": mode,
+        "severity": severity_label,
+        "precautions": precautions,
+        "doctor_advice": doctor_advice
     }
 
+
+def nearby_care_message(severity_label):
+    if severity_label == "Emergency":
+        return "Nearest-care advice: Visit the nearest hospital or emergency room immediately, or contact local emergency services."
+    if severity_label == "High":
+        return "Nearest-care advice: Consider visiting a nearby doctor, urgent care, or hospital for proper evaluation."
+    return "Nearest-care advice: If needed, consult a nearby clinic or doctor for a medical examination."
+
+
+def safe_pdf_text(text):
+    if text is None:
+        return ""
+    text = str(text)
+
+    replacements = {
+        "\u202f": " ",   # narrow no-break space
+        "\u00a0": " ",   # non-breaking space
+        "\u2013": "-",   # en dash
+        "\u2014": "-",   # em dash
+        "\u2018": "'",   # left single quote
+        "\u2019": "'",   # right single quote
+        "\u201c": '"',   # left double quote
+        "\u201d": '"',   # right double quote
+        "\u2022": "-",   # bullet
+        "\u2026": "...", # ellipsis
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    return text.encode("latin-1", "ignore").decode("latin-1")
 
 @app.route("/")
 def home():
@@ -203,6 +283,7 @@ def signup():
         return redirect(url_for("login"))
 
     return render_template("signup.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -247,34 +328,6 @@ def login():
 
     return render_template("login.html")
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user_id" not in session:
-            return redirect(url_for("login"))
-
-        user = users_collection.find_one({"_id": ObjectId(session["user_id"])})
-        if not user or user.get("role") != "admin":
-            flash("Access denied. Admin only.")
-            return redirect(url_for("chat_page"))
-
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-@app.route("/admin")
-@admin_required
-def admin_panel():
-    users = list(users_collection.find().sort("created_at", -1))
-    total_sessions = chat_sessions_collection.count_documents({})
-    total_messages = chat_messages_collection.count_documents({})
-
-    return render_template(
-        "admin.html",
-        users=users,
-        total_sessions=total_sessions,
-        total_messages=total_messages
-    )
 
 @app.route("/logout")
 def logout():
@@ -333,26 +386,67 @@ def history():
     return render_template("history.html", chat_sessions=user_sessions)
 
 
+@app.route("/admin")
+@admin_required
+def admin_panel():
+    users = list(users_collection.find().sort("created_at", -1))
+    total_sessions = chat_sessions_collection.count_documents({})
+    total_messages = chat_messages_collection.count_documents({})
+
+    return render_template(
+        "admin.html",
+        users=users,
+        total_sessions=total_sessions,
+        total_messages=total_messages
+    )
+
+
 @app.route("/get", methods=["POST"])
 @login_required
 def chat():
     msg = request.form.get("msg", "").strip()
-    if not msg:
-        return jsonify({"error": "Please enter a message."}), 400
+    age = request.form.get("age", "").strip()
+    gender = request.form.get("gender", "").strip()
+    symptom = request.form.get("symptom", "").strip()
+    duration = request.form.get("duration", "").strip()
+    severity_input = request.form.get("severity", "").strip()
+    conditions = request.form.get("conditions", "").strip()
+
+    if not msg and not symptom:
+        return jsonify({"error": "Please enter your symptom or message."}), 400
 
     current_session_id = session.get("chat_session_id")
     if not current_session_id:
         current_session_id = create_chat_session(session["user_id"])
         session["chat_session_id"] = current_session_id
 
-    save_message(current_session_id, "user", msg)
+    intake_parts = []
+    if age:
+        intake_parts.append(f"Age: {age}")
+    if gender:
+        intake_parts.append(f"Gender: {gender}")
+    if symptom:
+        intake_parts.append(f"Main Symptom: {symptom}")
+    if duration:
+        intake_parts.append(f"Duration: {duration}")
+    if severity_input:
+        intake_parts.append(f"Severity: {severity_input}")
+    if conditions:
+        intake_parts.append(f"Existing Conditions: {conditions}")
+    if msg:
+        intake_parts.append(f"User Query: {msg}")
 
-    response = rag_chain.invoke({"input": msg})
+    final_input = "\n".join(intake_parts)
+
+    save_message(current_session_id, "user", final_input)
+
+    response = rag_chain.invoke({"input": final_input})
     answer = str(response["answer"])
 
     current_chat = chat_sessions_collection.find_one({"_id": ObjectId(current_session_id)})
     if current_chat and current_chat.get("title") == "New Chat":
-        title = msg[:40] + ("..." if len(msg) > 40 else "")
+        base_title = symptom if symptom else msg
+        title = base_title[:40] + ("..." if len(base_title) > 40 else "")
         chat_sessions_collection.update_one(
             {"_id": ObjectId(current_session_id)},
             {"$set": {"title": title, "updated_at": datetime.utcnow()}}
@@ -360,40 +454,31 @@ def chat():
 
     save_message(current_session_id, "bot", answer)
 
-    mode = detect_mode(msg)
-    emergency = detect_emergency(msg) or detect_emergency(answer)
-    insight = build_insight(msg, answer, mode)
+    mode = detect_mode(final_input)
+    severity_label, severity_color = detect_severity(final_input, severity_input, answer)
+
+    intake_data = {
+        "age": age,
+        "gender": gender,
+        "symptom": symptom,
+        "duration": duration,
+        "conditions": conditions
+    }
+
+    summary = build_summary(intake_data, msg or symptom, answer, mode, severity_label)
+    emergency = severity_label == "Emergency"
+    care_message = nearby_care_message(severity_label)
 
     return jsonify({
         "answer": answer,
         "mode": mode,
+        "severity": severity_label,
+        "severity_color": severity_color,
+        "summary": summary,
         "emergency": emergency,
-        "insight": insight,
+        "care_message": care_message,
         "session_id": current_session_id
     })
-
-
-@app.route("/api/history/<session_id>")
-@login_required
-def api_history(session_id):
-    chat_obj = chat_sessions_collection.find_one({
-        "_id": ObjectId(session_id),
-        "user_id": ObjectId(session["user_id"])
-    })
-
-    if not chat_obj:
-        return jsonify({"error": "Not found"}), 404
-
-    messages = get_session_messages(session_id)
-    formatted_messages = [
-        {
-            "sender": m["sender"],
-            "message": m["message"],
-            "created_at": m["created_at"].isoformat() if m.get("created_at") else ""
-        }
-        for m in messages
-    ]
-    return jsonify(formatted_messages)
 
 
 @app.route("/download_report/<session_id>")
@@ -421,54 +506,65 @@ def download_report(session_id):
         elif m["sender"] == "bot":
             latest_bot_message = m["message"]
 
-    mode = detect_mode(latest_user_message or "")
-    insight = build_insight(latest_user_message or "", latest_bot_message or "", mode)
-    emergency = detect_emergency(latest_user_message + " " + latest_bot_message)
+    mode = detect_mode(latest_user_message)
+    severity_label, _ = detect_severity(latest_user_message, "", latest_bot_message)
 
-    lines = []
-    lines.append("AETHERCURA AI CONSULTATION REPORT")
-    lines.append("=" * 42)
-    lines.append(f"Patient/User: {session.get('username')}")
-    lines.append(f"Session Title: {chat_obj.get('title', 'Consultation')}")
-    lines.append(f"Generated On: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
-    lines.append(f"Consultation Mode: {mode}")
-    lines.append("")
+    summary = {
+        "primary_concern": "Consultation Summary",
+        "severity": severity_label,
+        "precautions": "Follow medical precautions and consult a doctor if symptoms persist.",
+        "doctor_advice": "Consult a licensed doctor for proper diagnosis and treatment."
+    }
 
-    if emergency:
-        lines.append("URGENT SAFETY FLAG:")
-        lines.append("Possible urgent concern detected. Seek immediate medical attention if symptoms are severe.")
-        lines.append("")
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
 
-    lines.append("SESSION SUMMARY:")
-    lines.append(f"Focus Area: {insight['focus_area']}")
-    lines.append(f"Suggested Next Step: {insight['next_step']}")
-    lines.append(f"Safety Note: {insight['safety_note']}")
-    lines.append("")
+    pdf.set_font("Arial", "B", 20)
+    pdf.cell(0, 10, "AetherCura AI Consultation Report", ln=True)
 
-    lines.append("LATEST AI GUIDANCE:")
-    lines.append(latest_bot_message if latest_bot_message else "No AI guidance available.")
-    lines.append("")
-    lines.append("FULL CHAT TRANSCRIPT:")
-    lines.append("-" * 42)
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 8, safe_pdf_text(f"Patient/User: {session.get('username')}"), ln=True)
+    pdf.cell(0, 8, safe_pdf_text(f"Session Title: {chat_obj.get('title', 'Consultation')}"), ln=True)
+    pdf.cell(0, 8, safe_pdf_text(f"Generated On: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}"), ln=True)
+    pdf.cell(0, 8, safe_pdf_text(f"Consultation Mode: {mode}"), ln=True)
+    pdf.cell(0, 8, safe_pdf_text(f"Severity Level: {severity_label}"), ln=True)
+    pdf.ln(6)
 
-    for m in messages:
-        sender = "USER" if m["sender"] == "user" else "AETHERCURA AI"
-        lines.append(f"{sender}:")
-        lines.append(m["message"])
-        lines.append("")
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "AI Guidance", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 8, safe_pdf_text(latest_bot_message if latest_bot_message else "No AI guidance available."))
+    pdf.ln(4)
 
-    lines.append("DISCLAIMER:")
-    lines.append("This file is an AI-generated consultation report and not a legal medical prescription.")
-    lines.append("Use it as general informational support only. Consult a licensed doctor for diagnosis, prescriptions, or emergencies.")
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "Precautions", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 8, safe_pdf_text(summary["precautions"]))
+    pdf.ln(4)
 
-    report_text = "\n".join(lines)
-    safe_title = re.sub(r"[^a-zA-Z0-9_-]+", "_", chat_obj.get("title", "consultation")).strip("_") or "consultation_report"
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "Doctor Advice", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 8, safe_pdf_text(summary["doctor_advice"]))
+    pdf.ln(4)
 
-    return Response(
-        report_text,
-        mimetype="text/plain",
-        headers={"Content-Disposition": f"attachment;filename={safe_title}.txt"}
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "Disclaimer", ln=True)
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(
+    0, 7,
+    safe_pdf_text(
+        "This is an AI-generated consultation report and not a legal medical prescription. "
+        "Use it only as informational support. For diagnosis, prescriptions, emergencies, or treatment, consult a licensed medical professional."
     )
+)
+
+    safe_title = re.sub(r"[^a-zA-Z0-9_-]+", "_", chat_obj.get("title", "consultation")).strip("_") or "consultation_report"
+    file_path = f"{safe_title}.pdf"
+    pdf.output(file_path)
+
+    return send_file(file_path, as_attachment=True)
 
 
 if __name__ == "__main__":

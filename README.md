@@ -58,7 +58,7 @@ open up localhost:
 - Pinecone
 
 
-# 7. Setup github secrets:
+#  Setup github secrets:
 
    - PINECONE_API_KEY
    - OPENAI_API_KEY
