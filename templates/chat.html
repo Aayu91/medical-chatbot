@@ -812,40 +812,7 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function appendSummaryCard(summary) {
-        const card = document.createElement("div");
-        card.className = "summary-card";
-        card.innerHTML = `
-            <div class="summary-title">AI Consultation Summary</div>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <div class="k">Primary Concern</div>
-                    <div class="v">${summary.primary_concern}</div>
-                </div>
-                <div class="summary-item">
-                    <div class="k">Duration</div>
-                    <div class="v">${summary.duration}</div>
-                </div>
-                <div class="summary-item">
-                    <div class="k">Severity</div>
-                    <div class="v">${summary.severity}</div>
-                </div>
-                <div class="summary-item">
-                    <div class="k">Age / Gender</div>
-                    <div class="v">${summary.age} / ${summary.gender}</div>
-                </div>
-                <div class="summary-item">
-                    <div class="k">Precautions</div>
-                    <div class="v">${summary.precautions}</div>
-                </div>
-                <div class="summary-item">
-                    <div class="k">When to See Doctor</div>
-                    <div class="v">${summary.doctor_advice}</div>
-                </div>
-            </div>
-        `;
-        chatBox.appendChild(card);
-    }
+    
 
     function appendSeverityCard(severity, color) {
         const widths = {
@@ -927,7 +894,7 @@
                 appendMessage(data.error, "bot");
             } else {
                 appendMessage(data.answer, "bot");
-                if (data.summary) appendSummaryCard(data.summary);
+               
                 if (data.severity) appendSeverityCard(data.severity, data.severity_color);
                 if (data.care_message) appendCareCard(data.care_message);
                 if (data.emergency) appendEmergencyBox();
