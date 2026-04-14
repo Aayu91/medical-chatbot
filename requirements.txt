@@ -10,4 +10,3 @@ langchain-community==0.3.26
 langchain-pinecone
 pymongo
 fpdf
--e .
