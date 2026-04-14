@@ -1,501 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sign Up | AetherCura</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root{
-            --bg-1:#040b16;
-            --bg-2:#071525;
-            --bg-3:#0b1f34;
-            --panel:rgba(255,255,255,0.08);
-            --border:rgba(255,255,255,0.14);
-            --text:#eaf4ff;
-            --muted:#9bb0c7;
-            --primary:#00d4ff;
-            --secondary:#14f1c7;
-            --shadow:0 24px 70px rgba(0,0,0,0.38);
+            --bg:#212121;
+            --panel:#171717;
+            --panel-2:#1f1f1f;
+            --border:#343541;
+            --text:#ececec;
+            --muted:#a1a1aa;
+            --accent:#10a37f;
+            --accent-2:#19c37d;
+            --danger:#ef4444;
+            --shadow:0 18px 45px rgba(0,0,0,.28);
+            --radius:24px;
         }
 
-        *{
+        *{box-sizing:border-box}
+        html,body{
             margin:0;
-            padding:0;
-            box-sizing:border-box;
+            min-height:100%;
+            font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+            background:var(--bg);
+            color:var(--text);
         }
 
         body{
-            min-height:100vh;
-            font-family:'Inter',sans-serif;
-            color:var(--text);
-            background:
-                radial-gradient(circle at 12% 18%, rgba(0,212,255,0.18), transparent 28%),
-                radial-gradient(circle at 85% 12%, rgba(20,241,199,0.14), transparent 24%),
-                radial-gradient(circle at 70% 80%, rgba(0,136,255,0.13), transparent 28%),
-                linear-gradient(145deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
             display:flex;
             align-items:center;
             justify-content:center;
-            padding:24px;
-            overflow-y:auto;
-            overflow-x:hidden;
+            padding:32px 18px;
+            background:
+                radial-gradient(circle at top right, rgba(16,163,127,.14), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(25,195,125,.10), transparent 22%),
+                var(--bg);
         }
 
-        body::before,
-        body::after{
-            content:"";
-            position:fixed;
-            width:320px;
-            height:320px;
-            border-radius:50%;
-            filter:blur(70px);
-            opacity:0.35;
-            z-index:0;
-            animation:floatGlow 10s ease-in-out infinite;
-            pointer-events:none;
-        }
-
-        body::before{
-            top:8%;
-            left:-60px;
-            background:rgba(0,212,255,0.2);
-        }
-
-        body::after{
-            bottom:-40px;
-            right:-40px;
-            background:rgba(20,241,199,0.16);
-            animation-delay:2s;
-        }
-
-        @keyframes floatGlow{
-            0%,100%{ transform:translateY(0) scale(1); }
-            50%{ transform:translateY(-18px) scale(1.05); }
-        }
-
-        .grid-overlay{
-            position:fixed;
-            inset:0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size:40px 40px;
-            mask-image:linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.08));
-            z-index:0;
-            pointer-events:none;
-        }
-
-        .auth-shell{
-            position:relative;
-            z-index:1;
-            width:100%;
-            max-width:1120px;
+        .page{
+            width:min(1120px,100%);
             display:grid;
-            grid-template-columns: 1.02fr 0.98fr;
-            gap:24px;
+            grid-template-columns:1.02fr .98fr;
+            gap:28px;
             align-items:stretch;
         }
 
-        .hero-panel,
+        .info-panel,
         .form-panel{
-            background:var(--panel);
-            border:1px solid var(--border);
-            backdrop-filter:blur(18px);
+            background:rgba(23,23,23,.94);
+            border:1px solid #2e2e2e;
+            border-radius:var(--radius);
             box-shadow:var(--shadow);
-            border-radius:30px;
         }
 
-        .hero-panel{
-            padding:34px;
+        .info-panel{
+            padding:40px;
             display:flex;
             flex-direction:column;
             justify-content:space-between;
-            position:relative;
             overflow:hidden;
+            position:relative;
         }
 
-        .hero-panel::after{
+        .info-panel::before{
             content:"";
             position:absolute;
-            left:-80px;
-            bottom:-80px;
-            width:240px;
-            height:240px;
+            inset:-40px auto auto -40px;
+            width:220px;
+            height:220px;
             border-radius:50%;
-            background:radial-gradient(circle, rgba(20,241,199,0.16), transparent 65%);
+            background:radial-gradient(circle, rgba(16,163,127,.22), transparent 68%);
         }
 
         .brand{
             display:flex;
             align-items:center;
-            gap:16px;
-            margin-bottom:24px;
+            gap:14px;
+            margin-bottom:28px;
+            position:relative;
+            z-index:1;
         }
 
-        .brand-icon{
-            width:64px;
-            height:64px;
-            border-radius:20px;
-            background:
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 38%),
-                linear-gradient(145deg, rgba(0,212,255,0.22), rgba(20,241,199,0.12));
-            border:1px solid rgba(255,255,255,0.14);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            box-shadow:0 0 26px rgba(0,212,255,0.18);
-        }
-
-        .brand-icon::before{
-            content:"+";
-            font-size:30px;
+        .brand-logo{
+            width:46px;
+            height:46px;
+            border-radius:14px;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,var(--accent),#0b6b54);
+            color:white;
             font-weight:800;
-            color:#e8ffff;
-            text-shadow:0 0 14px rgba(20,241,199,0.8);
+            font-size:18px;
         }
 
-        .brand h1{
-            font-family:'Orbitron',sans-serif;
-            font-size:28px;
-            letter-spacing:1px;
-            margin-bottom:4px;
+        .brand-text h1{
+            margin:0;
+            font-size:18px;
         }
 
-        .brand p{
+        .brand-text p{
+            margin:4px 0 0;
             color:var(--muted);
             font-size:13px;
-            line-height:1.6;
         }
 
-        .hero-copy h2{
-            font-size:38px;
-            line-height:1.15;
-            margin-bottom:14px;
-            font-weight:800;
+        .headline{
+            position:relative;
+            z-index:1;
+        }
+
+        .headline h2{
+            margin:0 0 14px;
+            font-size:40px;
+            line-height:1.12;
+            letter-spacing:-.03em;
+        }
+
+        .headline p{
+            margin:0;
             max-width:560px;
-        }
-
-        .hero-copy p{
-            color:var(--muted);
+            color:#c8c8d0;
+            line-height:1.75;
             font-size:15px;
-            line-height:1.8;
-            max-width:560px;
         }
 
-        .cards{
-            margin-top:28px;
+        .benefits{
             display:grid;
             gap:14px;
+            margin-top:28px;
+            position:relative;
+            z-index:1;
         }
 
-        .card{
-            padding:16px 18px;
+        .benefit{
+            background:#1f1f1f;
+            border:1px solid #2f2f2f;
             border-radius:18px;
-            background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-            border:1px solid rgba(255,255,255,0.08);
+            padding:16px;
         }
 
-        .card strong{
-            display:block;
-            margin-bottom:6px;
-            font-size:14px;
+        .benefit h3{
+            margin:0 0 8px;
+            font-size:15px;
         }
 
-        .card span{
+        .benefit p{
+            margin:0;
             color:var(--muted);
+            line-height:1.6;
             font-size:13px;
-            line-height:1.7;
         }
 
-        .mission-note{
-            margin-top:30px;
-            padding:16px 18px;
-            border-radius:18px;
-            background:linear-gradient(135deg, rgba(0,212,255,0.12), rgba(20,241,199,0.08));
-            border:1px solid rgba(255,255,255,0.08);
+        .footer-note{
+            margin-top:24px;
+            color:#8f8f99;
             font-size:13px;
-            color:#dffcff;
-            line-height:1.7;
+            position:relative;
+            z-index:1;
         }
 
         .form-panel{
-            padding:34px 30px;
+            padding:34px;
             display:flex;
             flex-direction:column;
             justify-content:center;
         }
 
-        .form-panel h3{
-            font-size:30px;
-            margin-bottom:10px;
-            font-weight:800;
+        .form-header{
+            margin-bottom:20px;
         }
 
-        .form-panel .subtext{
+        .form-header h2{
+            margin:0;
+            font-size:28px;
+        }
+
+        .form-header p{
+            margin:8px 0 0;
             color:var(--muted);
+            line-height:1.6;
             font-size:14px;
-            line-height:1.7;
-            margin-bottom:24px;
         }
 
-        .flash-list{
-            display:grid;
-            gap:10px;
-            margin-bottom:18px;
-        }
-
-        .flash{
+        .alert{
+            margin-bottom:14px;
             padding:12px 14px;
             border-radius:14px;
-            border:1px solid rgba(255,255,255,0.08);
-            background:rgba(255,95,122,0.12);
-            color:#ffe4ea;
-            font-size:13px;
-            line-height:1.6;
+            font-size:14px;
+            line-height:1.5;
+            border:1px solid transparent;
         }
 
-        .input-group{
-            margin-bottom:16px;
+        .alert.success{
+            background:rgba(16,163,127,.12);
+            border-color:rgba(16,163,127,.35);
+            color:#d8fff4;
         }
 
-        .input-label{
+        .alert.error,
+        .alert.danger{
+            background:rgba(239,68,68,.10);
+            border-color:rgba(239,68,68,.35);
+            color:#ffd5d5;
+        }
+
+        .form-group{
+            margin-bottom:15px;
+        }
+
+        .form-group label{
             display:block;
             margin-bottom:8px;
             font-size:13px;
+            color:#cfcfd5;
             font-weight:600;
-            color:#dfefff;
         }
 
-        .input-wrap input{
+        .input{
             width:100%;
-            padding:15px 16px;
-            border-radius:16px;
-            border:1px solid rgba(255,255,255,0.10);
-            background:rgba(255,255,255,0.05);
-            color:var(--text);
+            border:none;
             outline:none;
-            font-size:14px;
-            transition:0.25s ease;
+            background:#252525;
+            color:var(--text);
+            border:1px solid #393939;
+            border-radius:16px;
+            padding:14px 15px;
+            font-size:15px;
+            transition:.2s ease;
         }
 
-        .input-wrap input::placeholder{
-            color:#8ea4ba;
-        }
-
-        .input-wrap input:focus{
-            border-color:rgba(0,212,255,0.45);
-            box-shadow:0 0 0 4px rgba(0,212,255,0.08);
-            background:rgba(255,255,255,0.07);
+        .input:focus{
+            border-color:#4f8c7c;
+            box-shadow:0 0 0 4px rgba(16,163,127,.10);
         }
 
         .submit-btn{
             width:100%;
-            padding:15px 18px;
             border:none;
-            border-radius:18px;
-            background:linear-gradient(135deg, #00d4ff, #0b7cff, #14f1c7);
-            background-size:200% 200%;
+            cursor:pointer;
+            border-radius:16px;
+            padding:14px 16px;
+            background:var(--accent);
             color:white;
             font-size:15px;
             font-weight:700;
-            cursor:pointer;
-            box-shadow:0 12px 30px rgba(0,212,255,0.22);
-            margin-top:8px;
-            transition:0.25s ease;
-            animation:gradientShift 4s ease infinite;
+            transition:.2s ease;
+            margin-top:6px;
         }
 
         .submit-btn:hover{
-            transform:translateY(-2px);
-            box-shadow:0 14px 34px rgba(0,212,255,0.28);
+            background:var(--accent-2);
         }
 
-        @keyframes gradientShift{
-            0%{ background-position:0% 50%; }
-            50%{ background-position:100% 50%; }
-            100%{ background-position:0% 50%; }
-        }
-
-        .switch-link{
+        .bottom-text{
             margin-top:18px;
             text-align:center;
             color:var(--muted);
             font-size:14px;
         }
 
-        .switch-link a{
-            color:#7fefff;
+        .bottom-text a{
+            color:#ffffff;
             text-decoration:none;
-            font-weight:700;
+            font-weight:600;
         }
 
-        .switch-link a:hover{
-            text-decoration:underline;
-        }
-
-        @media (max-width: 960px){
-            .auth-shell{
+        @media (max-width: 920px){
+            .page{
                 grid-template-columns:1fr;
-                max-width:620px;
             }
 
-            .hero-panel{
-                padding:28px;
-            }
-
-            .hero-copy h2{
-                font-size:30px;
+            .headline h2{
+                font-size:32px;
             }
         }
 
         @media (max-width: 560px){
-            body{
-                padding:14px;
-            }
-
-            .hero-panel,
-            .form-panel{
-                border-radius:24px;
-            }
-
-            .hero-panel,
-            .form-panel{
-                padding:22px 18px;
-            }
-
-            .brand h1{
-                font-size:24px;
-            }
-
-            .hero-copy h2{
-                font-size:26px;
-            }
-
-            .form-panel h3{
-                font-size:26px;
+            .info-panel,.form-panel{
+                padding:22px;
             }
         }
-        html{
-    scroll-behavior:smooth;
-}
-
-body::-webkit-scrollbar{
-    width:10px;
-}
-
-body::-webkit-scrollbar-track{
-    background:rgba(255,255,255,0.04);
-}
-
-body::-webkit-scrollbar-thumb{
-    background:linear-gradient(180deg, rgba(0,212,255,0.75), rgba(20,241,199,0.75));
-    border-radius:20px;
-    border:2px solid transparent;
-    background-clip:padding-box;
-}
-
-body::-webkit-scrollbar-thumb:hover{
-    background:linear-gradient(180deg, rgba(0,212,255,0.95), rgba(20,241,199,0.95));
-    border-radius:20px;
-    border:2px solid transparent;
-    background-clip:padding-box;
-}
     </style>
 </head>
 <body>
-    <div class="grid-overlay"></div>
-
-    <div class="auth-shell">
-        <section class="hero-panel">
+    <div class="page">
+        <section class="info-panel">
             <div>
                 <div class="brand">
-                    <div class="brand-icon"></div>
-                    <div>
+                    <div class="brand-logo">A</div>
+                    <div class="brand-text">
                         <h1>AetherCura</h1>
-                        <p>AI-powered medical guidance with care, clarity, and trust.</p>
+                        <p>AI-powered medical guidance</p>
                     </div>
                 </div>
 
-                <div class="hero-copy">
-                    <h2>Create your gateway to futuristic medical AI.</h2>
+                <div class="headline">
+                    <h2>Create your gateway to a modern medical AI workspace.</h2>
                     <p>
-                        Build your AetherCura account to start personalized healthcare conversations, maintain smart consultation history, and experience a modern assistant designed around your mission.
+                        Build your AetherCura account to start personalized healthcare conversations,
+                        save consultation history, and use a cleaner interface that feels closer to ChatGPT.
                     </p>
                 </div>
 
-                <div class="cards">
-                    <div class="card">
-                        <strong>Personalized Access</strong>
-                        <span>Create your own secure account to manage conversations and health-related guidance in one place.</span>
+                <div class="benefits">
+                    <div class="benefit">
+                        <h3>Personalized access</h3>
+                        <p>Create your own secure account to manage consultations and chat sessions in one place.</p>
                     </div>
-                    <div class="card">
-                        <strong>Mission-Aligned Experience</strong>
-                        <span>Designed to reflect intelligent care, trust, and a visually futuristic medical platform.</span>
+                    <div class="benefit">
+                        <h3>Consistent experience</h3>
+                        <p>Your signup flow now matches the same modern visual style as the redesigned chat interface.</p>
                     </div>
-                    <div class="card">
-                        <strong>Future-Ready Dashboard</strong>
-                        <span>Your signup is the first step toward a complete healthcare assistant ecosystem with history and admin features.</span>
+                    <div class="benefit">
+                        <h3>Future-ready dashboard</h3>
+                        <p>Signing up is the first step into a smarter healthcare assistant ecosystem.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="mission-note">
-                AetherCura combines the feeling of advanced AI with the warmth and purpose of responsible healthcare support.
+            <div class="footer-note">
+                AetherCura combines advanced AI aesthetics with a healthcare-focused user experience.
             </div>
         </section>
 
         <section class="form-panel">
-            <div>
-                <h3>Sign Up</h3>
-                <p class="subtext">Create your AetherCura account and begin your intelligent healthcare journey.</p>
+            <div class="form-header">
+                <h2>Create Account</h2>
+                <p>Set up your account and begin your intelligent healthcare journey.</p>
+            </div>
 
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div class="flash-list">
-                            {% for category, message in messages %}
-                                <div class="flash">{{ message }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-                <form method="POST">
-                    <div class="input-group">
-                        <label class="input-label">Username</label>
-                        <div class="input-wrap">
-                            <input type="text" name="username" placeholder="Choose a username" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Email Address</label>
-                        <div class="input-wrap">
-                            <input type="email" name="email" placeholder="Enter your email" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <div class="input-wrap">
-                            <input type="password" name="password" placeholder="Create a password" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Confirm Password</label>
-                        <div class="input-wrap">
-                            <input type="password" name="confirm_password" placeholder="Confirm your password" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn">Create Account</button>
-                </form>
-
-                <div class="switch-link">
-                    Already have an account?
-                    <a href="{{ url_for('login') }}">Login here</a>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input class="input" type="text" id="username" name="username" placeholder="Choose a username" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input class="input" type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input class="input" type="password" id="password" name="password" placeholder="Create a password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input class="input" type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+
+            <div class="bottom-text">
+                Already have an account? <a href="{{ url_for('login') }}">Login here</a>
             </div>
         </section>
     </div>

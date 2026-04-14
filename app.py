@@ -218,23 +218,22 @@ def nearby_care_message(severity_label):
         return "Nearest-care advice: Consider visiting a nearby doctor, urgent care, or hospital for proper evaluation."
     return "Nearest-care advice: If needed, consult a nearby clinic or doctor for a medical examination."
 
-
 def safe_pdf_text(text):
     if text is None:
         return ""
     text = str(text)
 
     replacements = {
-        "\u202f": " ",   # narrow no-break space
-        "\u00a0": " ",   # non-breaking space
-        "\u2013": "-",   # en dash
-        "\u2014": "-",   # em dash
-        "\u2018": "'",   # left single quote
-        "\u2019": "'",   # right single quote
-        "\u201c": '"',   # left double quote
-        "\u201d": '"',   # right double quote
-        "\u2022": "-",   # bullet
-        "\u2026": "...", # ellipsis
+        "\u202f": " ",
+        "\u00a0": " ",
+        "\u2013": "-",
+        "\u2014": "-",
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2022": "-",
+        "\u2026": "...",
     }
 
     for old, new in replacements.items():
@@ -242,47 +241,9 @@ def safe_pdf_text(text):
 
     return text.encode("latin-1", "ignore").decode("latin-1")
 
-@app.route("/")
+@app.route('/')
 def home():
-    if "user_id" in session:
-        return redirect(url_for("chat_page"))
-    return redirect(url_for("login"))
-
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "").strip()
-        confirm_password = request.form.get("confirm_password", "").strip()
-
-        if not username or not email or not password or not confirm_password:
-            flash("All fields are required.")
-            return redirect(url_for("signup"))
-
-        if password != confirm_password:
-            flash("Passwords do not match.")
-            return redirect(url_for("signup"))
-
-        existing_user = users_collection.find_one({"email": email})
-        if existing_user:
-            flash("Email already registered. Please login.")
-            return redirect(url_for("login"))
-
-        users_collection.insert_one({
-            "username": username,
-            "email": email,
-            "password_hash": generate_password_hash(password),
-            "role": "user",
-            "is_active": True,
-            "created_at": datetime.utcnow()
-        })
-
-        flash("Signup successful. Please login.")
-        return redirect(url_for("login"))
-
-    return render_template("signup.html")
+    return render_template('index.html')
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -329,12 +290,47 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        if not username or not email or not password or not confirm_password:
+            flash("All fields are required.")
+            return redirect(url_for("signup"))
+
+        if password != confirm_password:
+            flash("Passwords do not match.")
+            return redirect(url_for("signup"))
+
+        existing_user = users_collection.find_one({"email": email})
+        if existing_user:
+            flash("Email already registered. Please login.")
+            return redirect(url_for("login"))
+
+        users_collection.insert_one({
+            "username": username,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "role": "user",
+            "is_active": True,
+            "created_at": datetime.utcnow()
+        })
+
+        flash("Signup successful. Please login.")
+        return redirect(url_for("login"))
+
+    return render_template("signup.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully.")
-    return redirect(url_for("login"))
-
+    return redirect(url_for("home"))
 
 @app.route("/chat")
 @login_required

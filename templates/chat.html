@@ -1,912 +1,890 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetherCura</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AetherCura | Chat</title>
     <style>
         :root{
-            --bg-1:#040b16;
-            --bg-2:#071525;
-            --bg-3:#0b1f34;
-            --panel:rgba(255,255,255,0.07);
-            --border:rgba(255,255,255,0.14);
-            --text:#eaf4ff;
-            --muted:#9bb0c7;
-            --primary:#00d4ff;
-            --secondary:#14f1c7;
-            --user-grad:linear-gradient(135deg,#00b8ff,#0078ff);
-            --bot-grad:linear-gradient(135deg,rgba(20,241,199,0.16),rgba(0,212,255,0.08));
-            --shadow:0 20px 60px rgba(0,0,0,0.35);
+            --bg:#212121;
+            --panel:#171717;
+            --panel-2:#1f1f1f;
+            --panel-3:#2a2a2a;
+            --border:#343541;
+            --text:#ececec;
+            --muted:#a9a9b3;
+            --accent:#10a37f;
+            --accent-2:#19c37d;
+            --user:#2f2f2f;
+            --bot:#1e1e1e;
+            --danger:#ef4444;
+            --shadow:0 10px 30px rgba(0,0,0,.25);
+            --radius:18px;
         }
 
-        *{margin:0;padding:0;box-sizing:border-box}
-
-        body{
-            font-family:'Inter',sans-serif;
-            min-height:100vh;
+        *{box-sizing:border-box}
+        html,body{
+            margin:0;
+            height:100%;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:var(--bg);
             color:var(--text);
-            background:
-                radial-gradient(circle at 12% 18%, rgba(0,212,255,0.18), transparent 28%),
-                radial-gradient(circle at 82% 12%, rgba(20,241,199,0.16), transparent 24%),
-                radial-gradient(circle at 70% 80%, rgba(0,136,255,0.14), transparent 28%),
-                linear-gradient(145deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
-            overflow:hidden;
         }
 
-        .medical-bg{
-            position:fixed;
-            inset:0;
-            overflow:hidden;
-            pointer-events:none;
-            z-index:0;
-        }
+        a{color:inherit;text-decoration:none}
+        button,input,textarea,select{font:inherit}
 
-        .grid-layer{
-            position:absolute;
-            inset:0;
-            background-image:
-                linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
-            background-size:46px 46px;
-            opacity:.22;
-            mask-image:radial-gradient(circle at center, black 40%, transparent 95%);
-            -webkit-mask-image:radial-gradient(circle at center, black 40%, transparent 95%);
-            animation:gridFloat 20s linear infinite;
-        }
-
-        .ecg-line{
-            position:absolute;
-            top:16%;
-            left:-8%;
-            width:116%;
-            height:110px;
-            opacity:.15;
-            filter:drop-shadow(0 0 10px rgba(0,212,255,.22));
-            background-repeat:no-repeat;
-            background-size:100% 100%;
-            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200' preserveAspectRatio='none'%3E%3Cpath d='M0 110 L120 110 L170 110 L210 70 L250 150 L300 110 L450 110 L520 110 L560 85 L590 110 L760 110 L820 110 L860 55 L910 165 L970 110 L1110 110 L1180 110 L1230 90 L1270 110 L1600 110' stroke='%2300d4ff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            animation:ecgMove 11s linear infinite;
-        }
-
-        .dna{
-            position:absolute;
-            width:160px;
-            height:420px;
-            opacity:.08;
-            filter:drop-shadow(0 0 12px rgba(20,241,199,.15));
-        }
-
-        .dna::before,
-        .dna::after{
-            content:"";
-            position:absolute;
-            inset:0;
-            background-repeat:repeat-y;
-            background-size:100% 64px;
-        }
-
-        .dna::before{
-            background-image:
-                radial-gradient(circle at 28% 18%, rgba(20,241,199,.85) 0 2px, transparent 3px),
-                radial-gradient(circle at 72% 50%, rgba(0,212,255,.85) 0 2px, transparent 3px),
-                linear-gradient(75deg, transparent 44%, rgba(255,255,255,.14) 48%, rgba(255,255,255,.14) 52%, transparent 56%);
-            animation:dnaTwist 9s ease-in-out infinite;
-        }
-
-        .dna::after{
-            background-image:
-                radial-gradient(circle at 72% 18%, rgba(20,241,199,.75) 0 2px, transparent 3px),
-                radial-gradient(circle at 28% 50%, rgba(0,212,255,.75) 0 2px, transparent 3px),
-                linear-gradient(-75deg, transparent 44%, rgba(255,255,255,.12) 48%, rgba(255,255,255,.12) 52%, transparent 56%);
-            animation:dnaTwistReverse 9s ease-in-out infinite;
-        }
-
-        .dna-1{
-            top:18%;
-            right:6%;
-            transform:rotate(12deg);
-        }
-
-        .dna-2{
-            bottom:10%;
-            left:4%;
-            transform:rotate(-10deg) scale(.9);
-            opacity:.06;
-        }
-
-        .plus{
-            position:absolute;
-            font-family:'Orbitron',sans-serif;
-            color:rgba(170,245,255,.22);
-            text-shadow:0 0 12px rgba(0,212,255,.18);
-            animation:floatPlus 9s ease-in-out infinite;
-            user-select:none;
-        }
-
-        .plus-1{
-            top:24%;
-            left:11%;
-            font-size:28px;
-            animation-delay:0s;
-        }
-
-        .plus-2{
-            top:68%;
-            right:12%;
-            font-size:22px;
-            animation-delay:2s;
-        }
-
-        .plus-3{
-            bottom:20%;
-            left:48%;
-            font-size:18px;
-            animation-delay:4s;
-        }
-
-        .node{
-            position:absolute;
-            width:10px;
-            height:10px;
-            border-radius:50%;
-            background:rgba(20,241,199,.7);
-            box-shadow:
-                0 0 10px rgba(20,241,199,.45),
-                0 0 20px rgba(0,212,255,.2);
-            opacity:.35;
-            animation:pulseNode 4s ease-in-out infinite;
-        }
-
-        .node::after{
-            content:"";
-            position:absolute;
-            top:50%;
-            left:50%;
-            width:90px;
-            height:1px;
-            background:linear-gradient(90deg, rgba(0,212,255,.18), transparent);
-            transform:translateY(-50%);
-            transform-origin:left center;
-        }
-
-        .node-1{ top:14%; right:20%; animation-delay:0s; }
-        .node-2{ top:58%; left:8%; animation-delay:1s; }
-        .node-3{ bottom:18%; right:28%; animation-delay:2s; }
-        .node-4{ bottom:28%; left:38%; animation-delay:3s; }
-
-        .app-shell{
-            position:relative;
-            z-index:1;
+        .app{
             display:flex;
             height:100vh;
-            padding:18px;
-            gap:18px;
+            overflow:hidden;
+            background:var(--bg);
         }
 
         .sidebar{
-            width:320px;
-            background:var(--panel);
-            border:1px solid var(--border);
-            backdrop-filter:blur(18px);
-            border-radius:28px;
-            box-shadow:var(--shadow);
+            width:280px;
+            background:#171717;
+            border-right:1px solid #2b2b2b;
             display:flex;
             flex-direction:column;
-            overflow:hidden;
-        }
-
-        .sidebar-top{
-            padding:24px 22px 18px;
-            border-bottom:1px solid rgba(255,255,255,.08);
+            padding:14px;
+            gap:14px;
         }
 
         .brand{
             display:flex;
             align-items:center;
-            gap:14px;
-            margin-bottom:16px;
+            gap:12px;
+            padding:10px 12px;
+            border-radius:16px;
+            background:#1e1e1e;
+            border:1px solid #2d2d2d;
         }
 
-        .brand-icon{
-            width:58px;
-            height:58px;
-            border-radius:18px;
-            background:linear-gradient(145deg, rgba(0,212,255,.22), rgba(20,241,199,.12));
-            border:1px solid rgba(255,255,255,.14);
+        .brand-logo{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,var(--accent),#0b6b54);
+            color:white;
+            font-weight:700;
+            box-shadow:var(--shadow);
+        }
+
+        .brand h1{
+            margin:0;
+            font-size:16px;
+            line-height:1.1;
+        }
+
+        .brand p{
+            margin:3px 0 0;
+            font-size:12px;
+            color:var(--muted);
+        }
+
+        .sidebar-actions{
+            display:grid;
+            gap:10px;
+        }
+
+        .btn{
+            border:none;
+            border-radius:14px;
+            padding:12px 14px;
+            cursor:pointer;
+            transition:.2s ease;
+            font-weight:600;
+        }
+
+        .btn-primary{
+            background:var(--accent);
+            color:white;
+        }
+
+        .btn-primary:hover{background:var(--accent-2)}
+
+        .btn-secondary{
+            background:#242424;
+            color:var(--text);
+            border:1px solid #333;
+        }
+
+        .btn-secondary:hover{
+            background:#2b2b2b;
+        }
+
+        .session-block{
+            min-height:0;
+            display:flex;
+            flex-direction:column;
+            flex:1;
+        }
+
+        .section-title{
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:.08em;
+            color:#8f8f99;
+            margin:4px 6px 10px;
+        }
+
+        .session-list{
+            overflow:auto;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            padding-right:4px;
+        }
+
+        .session-item{
+            background:#1d1d1d;
+            border:1px solid #2c2c2c;
+            border-radius:14px;
+            padding:12px;
+            transition:.2s ease;
+        }
+
+        .session-item:hover{
+            background:#252525;
+            transform:translateY(-1px);
+        }
+
+        .session-item.active{
+            border-color:#3f6d61;
+            background:#21312d;
+        }
+
+        .session-title{
+            font-size:14px;
+            font-weight:600;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+
+        .session-meta{
+            margin-top:5px;
+            font-size:12px;
+            color:var(--muted);
+        }
+
+        .sidebar-footer{
+            display:grid;
+            gap:10px;
+        }
+
+        .main{
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            min-width:0;
+            background:var(--bg);
+        }
+
+        .topbar{
+            height:68px;
+            border-bottom:1px solid #2b2b2b;
             display:flex;
             align-items:center;
-            justify-content:center;
-            box-shadow:0 0 24px rgba(0,212,255,.18);
+            justify-content:space-between;
+            padding:0 22px;
+            background:rgba(33,33,33,.92);
+            backdrop-filter: blur(8px);
         }
 
-        .brand-icon::before{
-            content:"+";
-            font-size:28px;
-            font-weight:800;
-            color:#dffcff;
+        .topbar-left h2{
+            margin:0;
+            font-size:16px;
         }
 
-        .brand-text h1{
-            font-family:'Orbitron',sans-serif;
-            font-size:24px;
-            letter-spacing:1px;
-            margin-bottom:4px;
-        }
-
-        .brand-text p{
+        .topbar-left p{
+            margin:3px 0 0;
             font-size:12px;
+            color:var(--muted);
+        }
+
+        .topbar-right{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .pill{
+            padding:8px 12px;
+            border-radius:999px;
+            background:#262626;
+            border:1px solid #363636;
+            font-size:13px;
+            color:#d6d6dc;
+        }
+
+        .chat-wrap{
+            flex:1;
+            overflow:auto;
+            padding:28px 18px 160px;
+        }
+
+        .chat-shell{
+            width:min(920px,100%);
+            margin:0 auto;
+        }
+
+        .hero{
+            text-align:center;
+            padding:36px 18px 26px;
+        }
+
+        .hero h3{
+            margin:0;
+            font-size:34px;
+            font-weight:700;
+        }
+
+        .hero p{
+            margin:10px auto 0;
+            max-width:700px;
+            color:var(--muted);
+            line-height:1.6;
+        }
+
+        .messages{
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .row{
+            display:flex;
+            gap:14px;
+            align-items:flex-start;
+        }
+
+        .row.user{
+            justify-content:flex-end;
+        }
+
+        .avatar{
+            width:36px;
+            height:36px;
+            border-radius:12px;
+            flex:0 0 36px;
+            display:grid;
+            place-items:center;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .avatar.bot{
+            background:linear-gradient(135deg,var(--accent),#0b6b54);
+            color:#fff;
+        }
+
+        .avatar.user{
+            background:#3a3a3a;
+            color:#fff;
+        }
+
+        .bubble{
+            max-width:min(78ch,85%);
+            padding:16px 18px;
+            border-radius:20px;
+            line-height:1.65;
+            white-space:pre-wrap;
+            box-shadow:var(--shadow);
+            border:1px solid #303030;
+        }
+
+        .row.bot .bubble{
+            background:var(--bot);
+        }
+
+        .row.user .bubble{
+            background:var(--user);
+        }
+
+        .meta-card{
+            margin-top:12px;
+            background:#1b2422;
+            border:1px solid #2e4a43;
+            border-radius:16px;
+            padding:14px;
+            color:#dff5ef;
+        }
+
+        .meta-card strong{
+            color:white;
+        }
+
+        .meta-line{
+            margin-top:8px;
+            font-size:14px;
+            color:#cce6df;
+        }
+
+        .empty-state{
+            margin-top:30px;
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:14px;
+        }
+
+        .suggestion{
+            background:#1d1d1d;
+            border:1px solid #2d2d2d;
+            border-radius:18px;
+            padding:16px;
+            color:#ddd;
+        }
+
+        .suggestion h4{
+            margin:0 0 8px;
+            font-size:15px;
+        }
+
+        .suggestion p{
+            margin:0;
+            font-size:13px;
             color:var(--muted);
             line-height:1.5;
         }
 
-        .mission{
-            padding:14px 16px;
-            border-radius:18px;
-            background:linear-gradient(135deg, rgba(0,212,255,.10), rgba(20,241,199,.07));
-            border:1px solid rgba(255,255,255,.08);
-        }
-
-        .mission p{
-            color:var(--muted);
-            font-size:12.5px;
-            line-height:1.6;
-        }
-
-        .sidebar-actions{
-            padding:18px 22px 14px;
-            display:grid;
-            gap:10px;
-        }
-
-        .action-btn{
-            text-decoration:none;
-            color:var(--text);
-            padding:14px 16px;
-            border-radius:16px;
-            background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-            border:1px solid rgba(255,255,255,.08);
-            font-weight:600;
-            display:flex;
-            align-items:center;
-            gap:10px;
-        }
-
-        .sidebar-section{
-            padding:4px 22px 10px;
-            color:var(--muted);
-            font-size:12px;
-            text-transform:uppercase;
-            letter-spacing:1.5px;
-            font-weight:700;
-        }
-
-        .chat-list{
-            flex:1;
-            overflow-y:auto;
-            padding:0 16px 18px;
-        }
-
-        .chat-link{
-            display:block;
-            text-decoration:none;
-            color:var(--text);
-            padding:14px;
-            margin-bottom:10px;
-            border-radius:16px;
-            background:rgba(255,255,255,.04);
-            border:1px solid rgba(255,255,255,.05);
-        }
-
-        .chat-link.active{
-            background:linear-gradient(135deg, rgba(0,212,255,.16), rgba(20,241,199,.10));
-            border-color:rgba(0,212,255,.28);
-        }
-
-        .chat-link-title{
-            font-size:14px;
-            font-weight:600;
-            line-height:1.45;
-            margin-bottom:6px;
-        }
-
-        .chat-link-meta{font-size:11px;color:var(--muted)}
-
-        .main-panel{
-            flex:1;
-            min-width:0;
-            display:flex;
-            flex-direction:column;
-            background:var(--panel);
-            border:1px solid var(--border);
-            backdrop-filter:blur(18px);
-            border-radius:28px;
-            box-shadow:var(--shadow);
-            overflow:hidden;
-        }
-
-        .main-header{
-            padding:22px 26px;
-            border-bottom:1px solid rgba(255,255,255,.08);
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:16px;
-        }
-
-        .header-left h2{
-            font-size:22px;
-            margin-bottom:6px;
-            font-weight:800;
-        }
-
-        .header-left p{
-            color:var(--muted);
-            font-size:13px;
-            line-height:1.6;
-        }
-
-        .header-right{
-            display:flex;
-            gap:12px;
-            align-items:center;
-        }
-
-        .user-pill{
-            padding:10px 14px;
-            border-radius:999px;
-            background:rgba(255,255,255,.06);
-            border:1px solid rgba(255,255,255,.08);
-            font-size:13px;
-        }
-
-        .logout-btn{
-            text-decoration:none;
-            color:white;
-            padding:11px 16px;
-            border-radius:14px;
-            font-size:13px;
-            font-weight:700;
-            background:linear-gradient(135deg, #ff5f7a, #ff2d55);
-        }
-
-        .messages{
-            flex:1;
-            min-height:0;
-            overflow-y:auto;
-            padding:20px 24px 12px;
-            display:flex;
-            flex-direction:column;
-            gap:16px;
-        }
-
-        .welcome-card,
-        .summary-card,
-        .severity-card,
-        .care-card,
-        .emergency-box{
-            max-width:860px;
-            padding:20px;
-            border-radius:22px;
-            border:1px solid rgba(255,255,255,.08);
-        }
-
-        .welcome-card{
-            background:linear-gradient(135deg, rgba(0,212,255,.12), rgba(20,241,199,.08));
-        }
-
-        .message-row{display:flex;width:100%}
-        .user-row{justify-content:flex-end}
-        .bot-row{justify-content:flex-start}
-
-        .message{
-            max-width:min(75%, 760px);
-            padding:16px 18px;
-            border-radius:20px;
-            line-height:1.7;
-            font-size:14.5px;
-            white-space:pre-wrap;
-            word-break:break-word;
-            box-shadow:0 16px 30px rgba(0,0,0,.12);
-        }
-
-        .message.user{
-            background:var(--user-grad);
-            color:white;
-            border-bottom-right-radius:8px;
-        }
-
-        .message.bot{
-            background:var(--bot-grad);
-            border:1px solid rgba(255,255,255,.08);
-            color:var(--text);
-            border-bottom-left-radius:8px;
-        }
-
-        .message-label{
-            display:block;
-            font-size:11px;
-            text-transform:uppercase;
-            letter-spacing:1.3px;
-            font-weight:700;
-            margin-bottom:8px;
-            opacity:.9;
-        }
-
-        .summary-card{
-            background:rgba(255,255,255,.05);
-        }
-
-        .summary-title{
-            font-size:16px;
-            font-weight:800;
-            color:#aef6ff;
-            margin-bottom:12px;
-        }
-
-        .summary-grid{
-            display:grid;
-            grid-template-columns:repeat(3, minmax(0,1fr));
-            gap:12px;
-        }
-
-        .summary-item{
-            padding:14px;
-            border-radius:16px;
-            background:rgba(255,255,255,.04);
-            border:1px solid rgba(255,255,255,.06);
-        }
-
-        .summary-item .k{
-            font-size:11px;
-            text-transform:uppercase;
-            letter-spacing:1.2px;
-            color:var(--muted);
-            margin-bottom:6px;
-            font-weight:700;
-        }
-
-        .summary-item .v{
-            font-size:13px;
-            line-height:1.7;
-        }
-
-        .severity-card{
-            background:rgba(255,255,255,.05);
-        }
-
-        .severity-title{
-            font-size:15px;
-            font-weight:800;
-            margin-bottom:10px;
-        }
-
-        .severity-bar{
-            width:100%;
-            height:14px;
-            border-radius:999px;
-            background:rgba(255,255,255,.08);
-            overflow:hidden;
-            margin-bottom:10px;
-        }
-
-        .severity-fill{
-            height:100%;
-            width:25%;
-            border-radius:999px;
-        }
-
-        .care-card{
-            background:linear-gradient(135deg, rgba(0,212,255,.10), rgba(20,241,199,.07));
-        }
-
-        .emergency-box{
-            background:linear-gradient(135deg, rgba(255,91,110,.18), rgba(255,179,71,.10));
-            border-color:rgba(255,91,110,.35);
-        }
-
         .composer-wrap{
-            padding:16px 22px 22px;
-            border-top:1px solid rgba(255,255,255,.08);
+            position:fixed;
+            left:280px;
+            right:0;
+            bottom:0;
+            padding:16px 18px 18px;
+            background:linear-gradient(to top, rgba(33,33,33,1) 55%, rgba(33,33,33,0));
         }
 
-        .typing-box{
-            display:none;
-            align-items:center;
-            gap:12px;
-            margin-bottom:12px;
-            padding:14px 16px;
-            border-radius:18px;
-            background:rgba(255,255,255,.05);
-            border:1px solid rgba(255,255,255,.08);
-            width:fit-content;
+        .composer-shell{
+            width:min(920px,100%);
+            margin:0 auto;
         }
 
-        .composer{
+        .intake-toggle{
+            margin-bottom:10px;
             display:flex;
-            align-items:flex-end;
-            gap:12px;
-            background:rgba(255,255,255,.06);
-            border:1px solid rgba(255,255,255,.10);
-            border-radius:22px;
+            justify-content:flex-end;
+        }
+
+        .ghost-btn{
+            border:none;
+            background:#232323;
+            color:#ddd;
+            border:1px solid #343434;
+            border-radius:12px;
+            padding:9px 12px;
+            cursor:pointer;
+        }
+
+        .intake-panel{
+            display:none;
+            grid-template-columns:repeat(5,1fr);
+            gap:10px;
+            margin-bottom:12px;
+            background:#1a1a1a;
+            border:1px solid #2b2b2b;
+            border-radius:18px;
             padding:12px;
         }
 
-        .composer textarea{
-            flex:1;
+        .intake-panel.show{
+            display:grid;
+        }
+
+        .field{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+
+        .field label{
+            font-size:12px;
+            color:var(--muted);
+        }
+
+        .field input, .field select{
+            width:100%;
+            background:#252525;
+            color:var(--text);
+            border:1px solid #373737;
+            border-radius:12px;
+            padding:11px 12px;
+            outline:none;
+        }
+
+        .composer{
+            background:#1f1f1f;
+            border:1px solid #363636;
+            border-radius:24px;
+            padding:12px;
+            box-shadow:var(--shadow);
+        }
+
+        .textarea{
+            width:100%;
             min-height:58px;
-            max-height:160px;
+            max-height:180px;
             resize:none;
             border:none;
             outline:none;
             background:transparent;
             color:var(--text);
-            font-family:'Inter',sans-serif;
-            font-size:14.5px;
+            padding:8px 10px 0;
             line-height:1.6;
-            padding:10px 10px 8px;
+            font-size:15px;
         }
 
-        .action-stack{
-            display:flex;
-            align-items:center;
-            gap:10px;
-        }
-
-        .download-btn,
-        .send-btn{
-            border:none;
-            border-radius:18px;
-            cursor:pointer;
-            color:white;
-            font-weight:700;
-        }
-
-        .download-btn{
-            min-width:58px;
-            height:58px;
-            background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
-            border:1px solid rgba(255,255,255,.1);
-            color:#c9f9ff;
-            text-decoration:none;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:20px;
-        }
-
-        .send-btn{
-            min-width:58px;
-            height:58px;
-            font-size:20px;
-            background:linear-gradient(135deg, #00d4ff, #0b7cff, #14f1c7);
-        }
-
-        .composer-footer{
+        .composer-bottom{
             display:flex;
             justify-content:space-between;
             align-items:center;
-            margin-top:10px;
-            padding:0 6px;
             gap:12px;
-            flex-wrap:wrap;
+            padding:8px 8px 4px;
         }
 
-        .composer-note{
+        .composer-hint{
+            font-size:12px;
             color:var(--muted);
-            font-size:12px;
         }
 
-        .timeline-link{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            color:#9fefff;
-            text-decoration:none;
-            font-size:12px;
-            font-weight:700;
+        .send-btn{
+            border:none;
+            background:var(--accent);
+            color:white;
+            width:42px;
+            height:42px;
+            border-radius:14px;
+            font-size:18px;
+            cursor:pointer;
+            transition:.2s ease;
         }
 
-        @keyframes gridFloat{
-            0%{transform:translateY(0)}
-            50%{transform:translateY(-10px)}
-            100%{transform:translateY(0)}
+        .send-btn:hover{background:var(--accent-2)}
+        .send-btn:disabled{
+            opacity:.55;
+            cursor:not-allowed;
         }
 
-        @keyframes ecgMove{
-            0%{transform:translateX(0);opacity:.10}
-            50%{transform:translateX(1.5%);opacity:.18}
-            100%{transform:translateX(0);opacity:.10}
+        .typing{
+            display:none;
+            margin-top:8px;
+            color:var(--muted);
+            font-size:14px;
         }
 
-        @keyframes dnaTwist{
-            0%,100%{transform:translateY(0) scaleX(1)}
-            50%{transform:translateY(-8px) scaleX(.82)}
+        .typing.show{display:block}
+
+        .mobile-toggle{
+            display:none;
         }
 
-        @keyframes dnaTwistReverse{
-            0%,100%{transform:translateY(0) scaleX(1)}
-            50%{transform:translateY(8px) scaleX(1.12)}
+        @media (max-width: 900px){
+            .sidebar{
+                position:fixed;
+                left:-100%;
+                top:0;
+                bottom:0;
+                z-index:50;
+                transition:.25s ease;
+            }
+
+            .sidebar.open{
+                left:0;
+            }
+
+            .main{
+                width:100%;
+            }
+
+            .composer-wrap{
+                left:0;
+            }
+
+            .mobile-toggle{
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width:40px;
+                height:40px;
+                border-radius:12px;
+                border:1px solid #333;
+                background:#232323;
+                color:#fff;
+                cursor:pointer;
+            }
+
+            .empty-state{
+                grid-template-columns:1fr;
+            }
+
+            .intake-panel{
+                grid-template-columns:1fr 1fr;
+            }
         }
 
-        @keyframes floatPlus{
-            0%,100%{transform:translateY(0) rotate(0deg);opacity:.18}
-            50%{transform:translateY(-12px) rotate(4deg);opacity:.32}
-        }
+        @media (max-width: 640px){
+            .topbar{
+                padding:0 14px;
+            }
 
-        @keyframes pulseNode{
-            0%,100%{transform:scale(1);opacity:.25}
-            50%{transform:scale(1.45);opacity:.5}
-        }
+            .chat-wrap{
+                padding:18px 12px 180px;
+            }
 
-        @media (max-width:1100px){
-            .summary-grid{grid-template-columns:1fr 1fr}
-        }
+            .hero h3{
+                font-size:26px;
+            }
 
-        @media (max-width:860px){
-            .app-shell{padding:10px;gap:10px}
-            .sidebar{display:none}
-            .main-header{padding:18px;flex-direction:column;align-items:flex-start}
-            .header-right{width:100%;justify-content:space-between}
-            .messages{padding:14px}
-            .composer-wrap{padding:14px}
-            .message{max-width:94%}
-            .summary-grid{grid-template-columns:1fr}
-            .dna{display:none}
-            .ecg-line{top:12%;height:80px}
+            .bubble{
+                max-width:100%;
+            }
+
+            .intake-panel{
+                grid-template-columns:1fr;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="medical-bg">
-    <div class="grid-layer"></div>
-    <div class="ecg-line"></div>
-    <div class="dna dna-1"></div>
-    <div class="dna dna-2"></div>
-
-    <div class="plus plus-1">+</div>
-    <div class="plus plus-2">+</div>
-    <div class="plus plus-3">+</div>
-
-    <div class="node node-1"></div>
-    <div class="node node-2"></div>
-    <div class="node node-3"></div>
-    <div class="node node-4"></div>
-</div>
-
-<div class="app-shell">
-    <aside class="sidebar">
-        <div class="sidebar-top">
-            <div class="brand">
-                <div class="brand-icon"></div>
-                <div class="brand-text">
-                    <h1>AetherCura</h1>
-                    <p>AI-powered medical guidance with care, clarity, and trust.</p>
-                </div>
-            </div>
-
-            <div class="mission">
-                <p>Empower every conversation with intelligent, compassionate, and accessible healthcare support through a futuristic AI assistant experience.</p>
+<div class="app">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-logo">A</div>
+            <div>
+                <h1>AetherCura</h1>
+                <p>Medical assistant workspace</p>
             </div>
         </div>
 
         <div class="sidebar-actions">
-            <a href="{{ url_for('new_chat') }}" class="action-btn">✦ Start New Consultation</a>
-            <a href="{{ url_for('history') }}" class="action-btn">🕘 Open Timeline History</a>
-            {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('admin_panel') }}" class="action-btn">📊 Admin Dashboard</a>
-            {% endif %}
+            <a href="{{ url_for('new_chat') }}" class="btn btn-primary">+ New chat</a>
+            <a href="{{ url_for('history') }}" class="btn btn-secondary">View history</a>
         </div>
 
-        <div class="sidebar-section">Recent Consultations</div>
+        <div class="session-block">
+            <div class="section-title">Recent chats</div>
+            <div class="session-list">
+                {% for chat in chat_sessions %}
+                    <a
+                        href="{{ url_for('load_chat', session_id=chat._id) }}"
+                        class="session-item {% if current_session_id == chat._id|string %}active{% endif %}"
+                    >
+                        <div class="session-title">{{ chat.title or 'New Chat' }}</div>
+                        <div class="session-meta">Open consultation</div>
+                    </a>
+                {% else %}
+                    <div class="session-item">
+                        <div class="session-title">No conversations yet</div>
+                        <div class="session-meta">Start your first medical chat</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
 
-        <div class="chat-list">
-            {% for chat in chat_sessions %}
-                <a href="{{ url_for('load_chat', session_id=chat['_id']) }}"
-                   class="chat-link {% if current_session_id == chat['_id']|string %}active{% endif %}">
-                    <div class="chat-link-title">{{ chat['title'] }}</div>
-                    <div class="chat-link-meta">Consultation timeline node</div>
+        <div class="sidebar-footer">
+            {% if current_session_id %}
+                <a href="{{ url_for('download_report', session_id=current_session_id) }}" class="btn btn-secondary">
+                    Download report
                 </a>
-            {% else %}
-                <a href="{{ url_for('new_chat') }}" class="chat-link">
-                    <div class="chat-link-title">No consultations yet</div>
-                    <div class="chat-link-meta">Start your first intelligent health chat</div>
-                </a>
-            {% endfor %}
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
         </div>
     </aside>
 
-    <main class="main-panel">
-        <header class="main-header">
-            <div class="header-left">
-                <h2>Welcome, {{ username }}</h2>
-                <p>Your intelligent healthcare companion for safe and meaningful conversations.</p>
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-left" style="display:flex;align-items:center;gap:12px;">
+                <button class="mobile-toggle" id="mobileToggle">☰</button>
+                <div>
+                    <h2>Medical Consultation Chat</h2>
+                    <p>Hello, {{ username }}. Ask symptoms, precautions, or guidance.</p>
+                </div>
             </div>
-            <div class="header-right">
-                <div class="user-pill">Connected to AetherCura Core</div>
-                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <div class="topbar-right">
+                <span class="pill">AI Assistant</span>
+                <span class="pill">Private Session</span>
             </div>
         </header>
 
-        <section class="messages" id="chat-box">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="message-row {% if message['sender'] == 'user' %}user-row{% else %}bot-row{% endif %}">
-                        <div class="message {{ message['sender'] }}">
-                            <span class="message-label">
-                                {% if message['sender'] == 'user' %}You{% else %}AetherCura AI{% endif %}
-                            </span>
-                            {{ message['message'] }}
+        <section class="chat-wrap" id="chatWrap">
+            <div class="chat-shell">
+                {% if not messages %}
+                    <div class="hero">
+                        <h3>How can I help with your health concern?</h3>
+                        <p>
+                            Describe your symptoms in natural language, or add optional medical details below for more structured guidance.
+                        </p>
+                    </div>
+
+                    <div class="empty-state">
+                        <div class="suggestion">
+                            <h4>Common symptoms</h4>
+                            <p>“I have fever, headache, and body pain since yesterday.”</p>
+                        </div>
+                        <div class="suggestion">
+                            <h4>Medication guidance</h4>
+                            <p>“What precautions should I take for acidity and nausea?”</p>
+                        </div>
+                        <div class="suggestion">
+                            <h4>Doctor consultation help</h4>
+                            <p>“These symptoms are worsening. Should I see a doctor urgently?”</p>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="welcome-card" id="welcome-card">
-                    <h3>Begin a smarter healthcare conversation</h3>
-                    <p>Describe your symptom or concern, and AetherCura will generate structured AI guidance, severity level, summary, and care advice.</p>
+                {% endif %}
+
+                <div class="messages" id="messages">
+                    {% for msg in messages %}
+                        {% if msg.sender == 'user' %}
+                            <div class="row user">
+                                <div class="bubble">{{ msg.message }}</div>
+                                <div class="avatar user">Y</div>
+                            </div>
+                        {% else %}
+                            <div class="row bot">
+                                <div class="avatar bot">AI</div>
+                                <div>
+                                    <div class="bubble">{{ msg.message }}</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
-            {% endif %}
+
+                <div class="typing" id="typing">AetherCura is thinking...</div>
+            </div>
         </section>
 
         <div class="composer-wrap">
-            <div class="typing-box" id="typing-indicator">
-                <span>AetherCura is analyzing your consultation...</span>
-            </div>
+            <div class="composer-shell">
+                <div class="intake-toggle">
+                    <button class="ghost-btn" id="toggleIntake">Add medical details</button>
+                </div>
 
-            <form id="chat-form">
-                <div class="composer">
-                    <textarea id="msg" name="msg" placeholder="Describe your health query, symptom, or concern..." required></textarea>
-                    <div class="action-stack">
-                        {% if current_session_id %}
-                            <a class="download-btn" href="{{ url_for('download_report', session_id=current_session_id) }}" title="Download PDF consultation report">⤓</a>
-                        {% else %}
-                            <a class="download-btn" href="{{ url_for('new_chat') }}" title="Create a consultation first">⤓</a>
-                        {% endif %}
-                        <button type="submit" class="send-btn" id="send-btn">➜</button>
+                <form id="chatForm">
+                    <div class="intake-panel" id="intakePanel">
+                        <div class="field">
+                            <label for="age">Age</label>
+                            <input type="text" id="age" name="age" placeholder="e.g. 21">
+                        </div>
+                        <div class="field">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender">
+                                <option value="">Select</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="symptom">Main symptom</label>
+                            <input type="text" id="symptom" name="symptom" placeholder="e.g. fever">
+                        </div>
+                        <div class="field">
+                            <label for="duration">Duration</label>
+                            <input type="text" id="duration" name="duration" placeholder="e.g. 2 days">
+                        </div>
+                        <div class="field">
+                            <label for="severity">Severity</label>
+                            <select id="severity" name="severity">
+                                <option value="">Select</option>
+                                <option>Mild</option>
+                                <option>Moderate</option>
+                                <option>Severe</option>
+                            </select>
+                        </div>
+                        <div class="field" style="grid-column:1/-1;">
+                            <label for="conditions">Existing conditions</label>
+                            <input type="text" id="conditions" name="conditions" placeholder="e.g. diabetes, asthma">
+                        </div>
                     </div>
-                </div>
 
-                <div class="composer-footer">
-                    <div class="composer-note">AetherCura provides AI-assisted health support. For diagnosis, emergencies, or prescriptions, consult a licensed professional.</div>
-                    <a href="{{ url_for('history') }}" class="timeline-link">⎯ View consultation timeline</a>
-                </div>
-            </form>
+                    <div class="composer">
+                        <textarea
+                            class="textarea"
+                            id="msg"
+                            name="msg"
+                            placeholder="Message AetherCura..."
+                            rows="1"
+                        ></textarea>
+
+                        <div class="composer-bottom">
+                            <div class="composer-hint">
+                                This assistant provides guidance, not a final diagnosis.
+                            </div>
+                            <button type="submit" class="send-btn" id="sendBtn">↑</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
-    const form = document.getElementById("chat-form");
-    const input = document.getElementById("msg");
-    const chatBox = document.getElementById("chat-box");
-    const sendBtn = document.getElementById("send-btn");
-    const typingIndicator = document.getElementById("typing-indicator");
+    const chatForm = document.getElementById("chatForm");
+    const messages = document.getElementById("messages");
+    const chatWrap = document.getElementById("chatWrap");
+    const typing = document.getElementById("typing");
+    const sendBtn = document.getElementById("sendBtn");
+    const msgInput = document.getElementById("msg");
+    const intakePanel = document.getElementById("intakePanel");
+    const toggleIntake = document.getElementById("toggleIntake");
+    const mobileToggle = document.getElementById("mobileToggle");
+    const sidebar = document.getElementById("sidebar");
 
-    function removeWelcomeCard() {
-        const welcomeCard = document.getElementById("welcome-card");
-        if (welcomeCard) welcomeCard.remove();
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text || "";
+        return div.innerHTML;
     }
 
-    function appendMessage(text, className) {
-        removeWelcomeCard();
+    function scrollToBottom() {
+        setTimeout(() => {
+            chatWrap.scrollTop = chatWrap.scrollHeight;
+        }, 50);
+    }
+
+    function autoResize(el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 180) + "px";
+    }
+
+    function appendUserMessage(text) {
+        const row = document.createElement("div");
+        row.className = "row user";
+        row.innerHTML = `
+            <div class="bubble">${escapeHtml(text)}</div>
+            <div class="avatar user">Y</div>
+        `;
+        messages.appendChild(row);
+        scrollToBottom();
+    }
+
+    function appendBotMessage(answer, data = {}) {
+        let metaHtml = "";
+
+        if (data.summary || data.severity || data.care_message) {
+            metaHtml = `
+                <div class="meta-card">
+                    ${data.severity ? `<div><strong>Severity:</strong> ${escapeHtml(data.severity)}</div>` : ""}
+                    ${data.summary ? `<div class="meta-line"><strong>Summary:</strong> ${escapeHtml(data.summary)}</div>` : ""}
+                    ${data.care_message ? `<div class="meta-line"><strong>Care advice:</strong> ${escapeHtml(data.care_message)}</div>` : ""}
+                    ${data.emergency ? `<div class="meta-line" style="color:#fecaca;"><strong>Emergency:</strong> Seek urgent medical attention if symptoms are severe or worsening.</div>` : ""}
+                </div>
+            `;
+        }
 
         const row = document.createElement("div");
-        row.className = "message-row " + (className === "user" ? "user-row" : "bot-row");
-
-        const message = document.createElement("div");
-        message.className = "message " + className;
-
-        const label = document.createElement("span");
-        label.className = "message-label";
-        label.textContent = className === "user" ? "You" : "AetherCura AI";
-
-        const content = document.createElement("div");
-        content.textContent = text;
-
-        message.appendChild(label);
-        message.appendChild(content);
-        row.appendChild(message);
-        chatBox.appendChild(row);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    
-
-    function appendSeverityCard(severity, color) {
-        const widths = {
-            "Low": "25%",
-            "Moderate": "55%",
-            "High": "80%",
-            "Emergency": "100%"
-        };
-
-        const card = document.createElement("div");
-        card.className = "severity-card";
-        card.innerHTML = `
-            <div class="severity-title">Severity Meter: ${severity}</div>
-            <div class="severity-bar">
-                <div class="severity-fill" style="width:${widths[severity] || '25%'}; background:${color};"></div>
+        row.className = "row bot";
+        row.innerHTML = `
+            <div class="avatar bot">AI</div>
+            <div>
+                <div class="bubble">${escapeHtml(answer)}</div>
+                ${metaHtml}
             </div>
-            <div style="color:var(--muted); font-size:13px;">This level is estimated from your message and AI health guidance.</div>
         `;
-        chatBox.appendChild(card);
+        messages.appendChild(row);
+        scrollToBottom();
     }
 
-    function appendCareCard(message) {
-        const card = document.createElement("div");
-        card.className = "care-card";
-        card.innerHTML = `
-            <div class="summary-title">Nearby Care Suggestion</div>
-            <div style="font-size:14px; line-height:1.7;">${message}</div>
-        `;
-        chatBox.appendChild(card);
-    }
+    toggleIntake.addEventListener("click", () => {
+        intakePanel.classList.toggle("show");
+        toggleIntake.textContent = intakePanel.classList.contains("show")
+            ? "Hide medical details"
+            : "Add medical details";
+    });
 
-    function appendEmergencyBox() {
-        const box = document.createElement("div");
-        box.className = "emergency-box";
-        box.innerHTML = `
-            <h4>Emergency Alert</h4>
-            <p>Possible urgent symptoms detected. Please seek immediate medical help or contact local emergency services if the condition is severe, worsening, or involves chest pain, breathing trouble, unconsciousness, seizures, or severe bleeding.</p>
-        `;
-        chatBox.appendChild(box);
-    }
+    mobileToggle?.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+    });
 
-    form.addEventListener("submit", async function(e) {
+    msgInput.addEventListener("input", () => autoResize(msgInput));
+
+    msgInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.requestSubmit();
+        }
+    });
+
+    chatForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const msg = input.value.trim();
-        const age = "";
-        const gender = "";
-        const symptom = "";
-        const duration = "";
-        const severity = "";
-        const conditions = "";
+        const msg = msgInput.value.trim();
+        const age = document.getElementById("age").value.trim();
+        const gender = document.getElementById("gender").value.trim();
+        const symptom = document.getElementById("symptom").value.trim();
+        const duration = document.getElementById("duration").value.trim();
+        const severity = document.getElementById("severity").value.trim();
+        const conditions = document.getElementById("conditions").value.trim();
 
-        if (!msg) return;
+        if (!msg && !symptom) return;
 
-        appendMessage(msg, "user");
-        input.value = "";
+        let previewText = msg;
+        if (!previewText) {
+            previewText = [
+                age ? `Age: ${age}` : "",
+                gender ? `Gender: ${gender}` : "",
+                symptom ? `Main Symptom: ${symptom}` : "",
+                duration ? `Duration: ${duration}` : "",
+                severity ? `Severity: ${severity}` : "",
+                conditions ? `Existing Conditions: ${conditions}` : ""
+            ].filter(Boolean).join("\n");
+        }
 
-        typingIndicator.style.display = "flex";
+        appendUserMessage(previewText);
+
+        typing.classList.add("show");
         sendBtn.disabled = true;
 
-        const formData = new FormData();
-        formData.append("msg", msg);
-        formData.append("age", age);
-        formData.append("gender", gender);
-        formData.append("symptom", symptom);
-        formData.append("duration", duration);
-        formData.append("severity", severity);
-        formData.append("conditions", conditions);
-
         try {
-            const res = await fetch("/get", {
+            const formData = new FormData();
+            formData.append("msg", msg);
+            formData.append("age", age);
+            formData.append("gender", gender);
+            formData.append("symptom", symptom);
+            formData.append("duration", duration);
+            formData.append("severity", severity);
+            formData.append("conditions", conditions);
+
+            const response = await fetch("/get", {
                 method: "POST",
                 body: formData
             });
 
-            const data = await res.json();
+            const data = await response.json();
 
-            if (data.error) {
-                appendMessage(data.error, "bot");
-            } else {
-                appendMessage(data.answer, "bot");
-               
-                if (data.severity) appendSeverityCard(data.severity, data.severity_color);
-                if (data.care_message) appendCareCard(data.care_message);
-                if (data.emergency) appendEmergencyBox();
+            typing.classList.remove("show");
+
+            if (!response.ok) {
+                appendBotMessage(data.error || "Something went wrong. Please try again.");
+                return;
+            }
+
+            appendBotMessage(data.answer, data);
+
+            msgInput.value = "";
+            autoResize(msgInput);
+
+            if (data.session_id && !window.location.pathname.includes(data.session_id)) {
+                window.history.replaceState({}, "", `/chat/${data.session_id}`);
             }
         } catch (error) {
-            appendMessage("Something went wrong while connecting to AetherCura. Please try again.", "bot");
+            typing.classList.remove("show");
+            appendBotMessage("Unable to connect to the server right now.");
         } finally {
-            typingIndicator.style.display = "none";
             sendBtn.disabled = false;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            scrollToBottom();
         }
     });
+
+    scrollToBottom();
+    autoResize(msgInput);
 </script>
 </body>
 </html>
