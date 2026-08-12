@@ -9,7 +9,7 @@ pinecone==7.3.0
 langchain==0.3.26
 langchain-openai==0.3.24
 langchain-community==0.3.26
-langchain-pinecone==0.2.8
+langchain-pinecone==0.2.13
 sentence-transformers==3.0.1
 numpy==1.26.4
 tokenizers==0.19.1
