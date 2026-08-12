@@ -13,4 +13,4 @@ langchain-pinecone==0.2.8
 sentence-transformers==3.0.1
 numpy==1.26.4
 tokenizers==0.19.1
-PYTHON_VERSION=3.12.10
+PYTHON_VERSION==3.12.10
