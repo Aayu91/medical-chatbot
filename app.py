@@ -41,7 +41,7 @@ chat_messages_collection.create_index("session_id")
 
 embeddings = download_hugging_face_embeddings()
 
-index_name = "medical-chatbot"
+index_name = "aethercuraai"
 
 docsearch = PineconeVectorStore.from_existing_index(
     index_name=index_name,
